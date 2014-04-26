@@ -27,12 +27,16 @@ $(document).ready(function() {
                     $example.html("<option value='0'>Please select a example</option>");
                     break;
                 
+                case "caption":
+                    $caption.val("");
+                    break;
+                
             }
         }
     }
 
     $category.change(function() {
-        reset("book", "chapter", "example");
+        reset("book", "chapter", "example", "caption");
         var category_id = $(this).val();
         
         $.ajax({
@@ -46,7 +50,7 @@ $(document).ready(function() {
     });
 
     $book.change(function() {
-        reset("chapter", "example");
+        reset("chapter", "example", "caption");
         var book_id = $(this).val();
         
         $.ajax({
@@ -60,7 +64,7 @@ $(document).ready(function() {
     });
 
     $chapter.change(function() {
-        reset("example");
+        reset("example", "caption");
         var chapter_id = $(this).val();
         
         $.ajax({
@@ -75,6 +79,7 @@ $(document).ready(function() {
 
     $example.change(function() {
         var example_id = $(this).val();
+        reset("caption");
         
         $.ajax({
             url: modPath + "ajax/example/" + example_id,

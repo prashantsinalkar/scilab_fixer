@@ -3,6 +3,8 @@
 }
 #fix-caption-form .well {
     margin-top: 25px;
+    width: 620px;
+    overflow-x: auto;
 }
 #fix-caption-page #updating,
 #fix-caption-page #done {
