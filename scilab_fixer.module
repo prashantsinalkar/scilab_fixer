@@ -1,0 +1,166 @@
+<?php 
+    function scilab_fixer_menu() {
+        $items = array();
+        $items["fix/caption"] = array(
+            "title"  => "Fix TBC captions",
+            "page callback" => "scilab_fixer_caption_all",
+            "access arguments" => array("fix scilab"),
+            "type" => MENU_NORMAL_ITEM
+        );
+        $items["fix/ajax"] = array(
+            "page callback" => "scilab_fixer_ajax",
+            "access callback" => TRUE,
+            "type" => MENU_CALLBACK
+        );
+        return $items;
+    }
+
+    function scilab_fixer_perm() {
+        return array(
+            "fix scilab",
+        );
+    }
+
+    function scilab_fixer_caption_form($form_state) {
+        $form = array();
+        $form["wrapper"] = array(
+            "#type" => "fieldset",
+            "#title"=> "Caption change form",
+            "#prefix" => "<div id='fix-caption-form'>",
+            "#suffix" => "</div>",
+        );
+        $form["wrapper"]["category"] = array(
+            "#type" => "select",
+            "#title" => t("Please select the category"),
+            '#options' => array(
+                0 => 'Please select a category',
+                1 => 'Fluid Mechanics',
+                2 => 'Control Theory & Control Systems',
+                3 => 'Chemical Engineering',
+                4 => 'Thermodynamics',
+                5 => 'Mechanical Engineering',
+                6 => 'Signal Processing',
+                7 => 'Digital Communications',
+                8 => 'Electrical Technology',
+                9 => 'Mathematics & Pure Science',
+               10 => 'Analog Electronics',
+               11 => 'Digital Electronics',
+               12 => 'Computer Programming',
+               13 => 'Others'
+            ),
+        );
+        $form["wrapper"]["book"] = array(
+            "#type" => "select",
+            "#title" => t("Please select the book."),
+            "#options" => array(
+                0 => "Please select a book"
+            )
+        );
+        $form["wrapper"]["chapter"] = array(
+            "#type" => "select",
+            "#title" => t("Please select the chapter"),
+            "#options" => array(
+                0 => "Please select a chapter"
+            )
+        );
+        $form["wrapper"]["example"] = array(
+            "#type" => "select",
+            "#title" => t("Please select the example"),
+            "#options" => array(
+                0 => "Please select a example"
+            )
+        );
+        $form["wrapper"]["caption"] = array(
+            "#type" => "textfield",
+            "#title" => t("Enter new caption"),
+        );
+        $form["wrapper"]["submit"] = array(
+            "#type" => "submit",
+            "#value" => "Update"
+        );
+        $form["wrapper"]["code"] = array(
+            "#type" => "fieldset",
+            "#description" => t("No code to display"),
+            "#prefix" => "<div class='well'><pre id='fix-caption-code'>",
+            "#suffix" => "</pre></div>",
+        );
+        return $form;
+    }
+
+    function scilab_fixer_caption_all() {
+        $page_content = "";
+        $page_content .= "<div id='fix-caption-page'>";
+            $page_content .= "<center><span id='updating'>Updating...</span></center>";
+            $page_content .= "<span id='done'>Done.</span>";
+            $page_content .= drupal_get_form("scilab_fixer_caption_form");
+        $page_content .= "</div>";
+        return $page_content;
+    }
+
+    function scilab_fixer_ajax($item, $key) {
+        $data = "";
+        if($item == "category" && $key) {
+            $query = "
+                SELECT pre.id AS id, pre.book, pre.author FROM textbook_companion_preference pre
+                LEFT JOIN textbook_companion_proposal pro ON pro.id = pre.proposal_id
+                WHERE pro.proposal_status = 3 AND pre.approval_status = 1 AND pre.category = %d
+                ORDER BY pre.book ASC
+            ";
+            $result = db_query($query, $key);
+            
+            $data .= "<option value='0'>Please select the book.</option>";
+            while($row = db_fetch_object($result)) {
+                $data .= "<option value='{$row->id}'>{$row->book}</option>";
+            }
+        } else if($item == "book" && $key) {
+            $query = "SELECT * FROM {textbook_companion_chapter} WHERE preference_id = %d ORDER BY number";
+            $result = db_query($query, $key);
+            
+            $data .= "<option value='0'>Please select the chapter.</option>";
+            while($row = db_fetch_object($result)) {
+                $data .= "<option value='{$row->id}'>{$row->number} {$row->name}</option>";
+            }
+        } else if($item == "chapter" && $key) {
+            $query = "SELECT * FROM {textbook_companion_example} WHERE chapter_id = %d ORDER BY number";
+            $result = db_query($query, $key);
+            
+            $data .= "<option value='0'>Please select the example.</option>";
+            while($row = db_fetch_object($result)) {
+                $data .= "<option value='{$row->id}'>{$row->number} {$row->caption}</option>";
+            }
+        } else if($item == "example" && $key) {
+            $query = "
+                SELECT * FROM textbook_companion_example_files fil
+                LEFT JOIN textbook_companion_example exa ON exa.id = fil.example_id
+                WHERE example_id = %d
+            ";
+            $result = db_query($query, $key);
+            $row = db_fetch_object($result);
+            /* fetching example file data */
+            $uploads_dir = $_SERVER['DOCUMENT_ROOT'] . base_path() . "uploads/";
+            $example_path = $uploads_dir . $row->filepath;
+            $example = file_get_contents($example_path);
+            $data .= "<div id='caption'>{$row->caption}</div>";
+            $data .= "<div id='code'>{$example}</div>";
+        } else if($item == "update") {
+            $example_id = $_POST["example_id"];
+            $caption = $_POST["caption"];
+            $query = "
+                UPDATE textbook_companion_example
+                SET caption = '%s'
+                WHERE id = %d
+            ";
+            $result = db_query($query, $caption, $example_id);
+            $data .= "Updated";
+        } else {
+            $data = "Nothing to display.";
+        }
+        echo $data;
+        exit();
+    }
+
+    function scilab_fixer_init() {
+        drupal_add_css(drupal_get_path("module", "scilab_fixer") . "/css/scilab_fixer.css");
+        drupal_add_js(drupal_get_path("module", "scilab_fixer") . "/js/scilab_fixer.js");
+    }
+?>
