@@ -110,7 +110,7 @@
             
             $data .= "<option value='0'>Please select the book.</option>";
             while($row = db_fetch_object($result)) {
-                $data .= "<option value='{$row->id}'>{$row->book}</option>";
+                $data .= "<option value='{$row->id}'>{$row->book} ({$row->author})</option>";
             }
         } else if($item == "book" && $key) {
             $query = "SELECT * FROM {textbook_companion_chapter} WHERE preference_id = %d ORDER BY number";
