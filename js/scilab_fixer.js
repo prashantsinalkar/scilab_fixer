@@ -11,6 +11,7 @@ $(document).ready(function() {
     $form = $("#scilab-fixer-caption-form");
     $updating = $("#fix-caption-page #updating");
     $done = $("#fix-caption-page #done");
+    $example.attr("multiple", "enabled");
 
     function reset() {
         for (var i = 0, l = arguments.length; i < l; i ++) {
