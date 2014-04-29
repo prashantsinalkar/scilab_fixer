@@ -6,6 +6,9 @@
     width: 620px;
     overflow-x: auto;
 }
+#fix-caption-form #edit-example {
+    height: 250px;
+}
 #fix-caption-page #updating,
 #fix-caption-page #done {
     display: none;

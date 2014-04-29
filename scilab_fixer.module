@@ -94,6 +94,7 @@
             $page_content .= "<span id='done'>Done.</span>";
             $page_content .= drupal_get_form("scilab_fixer_caption_form");
         $page_content .= "</div>";
+        $page_content .= "<small>* Selecting text from above code-area with mouse will add it to the caption textbox.</small>";
         return $page_content;
     }
 
@@ -162,5 +163,6 @@
     function scilab_fixer_init() {
         drupal_add_css(drupal_get_path("module", "scilab_fixer") . "/css/scilab_fixer.css");
         drupal_add_js(drupal_get_path("module", "scilab_fixer") . "/js/scilab_fixer.js");
+        drupal_add_js(drupal_get_path("module", "scilab_fixer") . "/js/selection.js");
     }
 ?>
