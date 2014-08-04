@@ -16,11 +16,11 @@ function getSelectionText(divID) {
     return selectedText;
 }
 $(document).ready(function() {
-    $("#fix-caption-code").mousedown(function() {
-        $("#edit-caption").val("");
+   $("#fix-caption-code").mousedown(function() {
+      $("#edit-caption").val("");
     });
-    $("#fix-caption-code").mouseup(function() {
-        quotedText = getSelectionText("#fix-caption-code");
-        $("#edit-caption").val(quotedText);
-    });
+   $("#fix-caption-code").mouseup(function() {
+      quotedText = getSelectionText("#fix-caption-code");
+      $("#edit-caption").val(quotedText);
+   });
 });

@@ -89,13 +89,13 @@ $(document).ready(function() {
             success: function(data) {
                 var code = $(data).filter("#code").html();
                 $code.html(code);
-                var caption = $(data).filter("#caption").html();
-                $caption.val(caption);
+                //var caption = $(data).filter("#caption").html();
+               // $caption.val(caption);
             }
         });
     });
 
-    $form.submit(function(e) {
+   $form.submit(function(e) {
         var example_id = $example.val();
         if(example_id != "0") {
             var caption = $caption.val();
