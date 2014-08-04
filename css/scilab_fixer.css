@@ -1,16 +1,16 @@
-#fix-caption-form #edit-caption {
+#fix-tbc-form #edit-caption {
     width: 99% !important;
 }
-#fix-caption-form .well {
+#fix-tbc-form .well {
     margin-top: 25px;
     width: 620px;
     overflow-x: auto;
 }
-#fix-caption-form #edit-example {
+#fix-tbc-form #edit-example {
     height: 250px;
 }
-#fix-caption-page #updating,
-#fix-caption-page #done {
+#fix-tbc-page #updating,
+#fix-tbc-page #done {
     display: none;
     position: fixed;                                                            
     z-index: 2000;                                                              
@@ -26,9 +26,13 @@
           -obox-shadow: 0px 0px 10px #cccccc;                                   
             box-shadow: 0px 0px 10px #cccccc; 
 }
-#fix-caption-page #updating {
+#fix-tbc-page #updating {
     background: #FF851B;
 }
-#fix-caption-page #done {
+#fix-tbc-page #done {
     background: #2ECC40;
+}
+textarea#edit-code {
+    height: 300px;
+    width: 650px;
 }

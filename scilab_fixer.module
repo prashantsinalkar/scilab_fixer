@@ -29,6 +29,13 @@
             "weight" => 2,
             "type" => MENU_LOCAL_TASK
         );
+        $items["fix/code"] = array(
+            "title"  => "Edit TBC code",
+            "page callback" => "scilab_fixer_code_all",
+            "access arguments" => array("fix scilab"),
+            "access arguments" => array("fix scilab"),
+            "type" => MENU_CALLBACK
+        );
         $items["fix/ajax"] = array(
             "page callback" => "scilab_fixer_ajax",
             "access callback" => TRUE,
@@ -48,7 +55,7 @@
         $form["wrapper"] = array(
             "#type" => "fieldset",
             "#title"=> "Caption change form",
-            "#prefix" => "<div id='fix-caption-form'>",
+            "#prefix" => "<div id='fix-tbc-form'>",
             "#suffix" => "</div>",
         );
         $form["wrapper"]["category"] = array(
@@ -100,10 +107,10 @@
             "#type" => "submit",
             "#value" => "Update"
         );
-        $form["wrapper"]["code"] = array(
+        $form["wrapper"]["code_wrapper"] = array(
             "#type" => "fieldset",
             "#description" => t("No code to display"),
-            "#prefix" => "<div class='well'><pre id='fix-caption-code'>",
+            "#prefix" => "<div class='well'><pre id='edit-code' class='fix-caption-code'>",
             "#suffix" => "</pre></div>",
         );
         return $form;
@@ -111,7 +118,7 @@
 
     function scilab_fixer_caption_all() {
         $page_content = "";
-        $page_content .= "<div id='fix-caption-page'>";
+        $page_content .= "<div id='fix-tbc-page'>";
             $page_content .= "<center><span id='updating'>Updating...</span></center>";
             $page_content .= "<span id='done'>Done.</span>";
             $page_content .= drupal_get_form("scilab_fixer_caption_form");
@@ -175,6 +182,18 @@
             ";
             $result = db_query($query, $caption, $example_id);
             $data .= "Updated";
+        } else if($item == "code" && $key) {
+            $code = $_POST["code"];
+            $query = "
+                SELECT * FROM textbook_companion_example_files
+                WHERE example_id = %d AND filetype = 'S'
+            ";
+            $result = db_query($query, $key);
+            $row = db_fetch_object($result);
+            $uploads_dir = $_SERVER['DOCUMENT_ROOT'] . base_path() . "uploads/";
+            $example_path = $uploads_dir . $row->filepath;
+            file_put_contents($example_path, $code);
+            $data .= "updated";
         } else {
             $data = "Nothing to display.";
         }
@@ -334,6 +353,76 @@
             }
             $page_content .= theme("table", $headers, $rows);
         }
+        return $page_content;
+    }
+
+    function scilab_fixer_code_form($form_state) {
+        $form = array();
+        $form["wrapper"] = array(
+            "#type" => "fieldset",
+            "#title"=> "Code edit form",
+            "#prefix" => "<div id='fix-tbc-form'>",
+            "#suffix" => "</div>",
+        );
+        $form["wrapper"]["category"] = array(
+            "#type" => "select",
+            "#title" => t("Please select the category"),
+            '#options' => array(
+                0 => 'Please select a category',
+                1 => 'Fluid Mechanics',
+                2 => 'Control Theory & Control Systems',
+                3 => 'Chemical Engineering',
+                4 => 'Thermodynamics',
+                5 => 'Mechanical Engineering',
+                6 => 'Signal Processing',
+                7 => 'Digital Communications',
+                8 => 'Electrical Technology',
+                9 => 'Mathematics & Pure Science',
+               10 => 'Analog Electronics',
+               11 => 'Digital Electronics',
+               12 => 'Computer Programming',
+               13 => 'Others'
+            ),
+        );
+        $form["wrapper"]["book"] = array(
+            "#type" => "select",
+            "#title" => t("Please select the book."),
+            "#options" => array(
+                0 => "Please select a book"
+            )
+        );
+        $form["wrapper"]["chapter"] = array(
+            "#type" => "select",
+            "#title" => t("Please select the chapter"),
+            "#options" => array(
+                0 => "Please select a chapter"
+            )
+        );
+        $form["wrapper"]["example"] = array(
+            "#type" => "select",
+            "#title" => t("Please select the example"),
+            "#options" => array(
+                0 => "Please select a example"
+            )
+        );
+        $form["wrapper"]["code"] = array(
+            "#type" => "textarea",
+            "#title" => t("Code Editor"),
+        );
+        $form["wrapper"]["submit"] = array(
+            "#type" => "submit",
+            "#value" => "Update"
+        );
+        return $form;
+    }
+
+    function scilab_fixer_code_all() {
+        $page_content = "";
+        $page_content .= "<div id='fix-tbc-page'>";
+            $page_content .= "<center><span id='updating'>Updating...</span></center>";
+            $page_content .= "<span id='done'>Done.</span>";
+            $page_content .= drupal_get_form("scilab_fixer_code_form");
+        $page_content .= "</div>";
         return $page_content;
     }
 

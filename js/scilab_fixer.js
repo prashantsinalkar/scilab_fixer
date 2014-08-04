@@ -2,15 +2,16 @@ $(document).ready(function() {
     var basePath = Drupal.settings.basePath;
     var modPath = basePath + "fix/";
 
-    $category = $("#fix-caption-form #edit-category");
-    $book = $("#fix-caption-form #edit-book");
-    $chapter = $("#fix-caption-form #edit-chapter");
-    $example = $("#fix-caption-form #edit-example");
-    $caption = $("#fix-caption-form #edit-caption");
-    $code = $("#fix-caption-form #fix-caption-code");
-    $form = $("#scilab-fixer-caption-form");
-    $updating = $("#fix-caption-page #updating");
-    $done = $("#fix-caption-page #done");
+    $category = $("#fix-tbc-form #edit-category");
+    $book = $("#fix-tbc-form #edit-book");
+    $chapter = $("#fix-tbc-form #edit-chapter");
+    $example = $("#fix-tbc-form #edit-example");
+    $caption = $("#fix-tbc-form #edit-caption");
+    $code = $("#fix-tbc-form #edit-code");
+    $caption_form = $("#scilab-fixer-caption-form");
+    $code_form = $("#scilab-fixer-code-form");
+    $updating = $("#fix-tbc-page #updating");
+    $done = $("#fix-tbc-page #done");
     $example.attr("multiple", "enabled");
 
     function reset() {
@@ -81,21 +82,30 @@ $(document).ready(function() {
     $example.change(function() {
         var example_id = $(this).val();
         reset("caption");
-        
+        console.log("########" + example_id);
         $.ajax({
             url: modPath + "ajax/example/" + example_id,
             type: "POST",
             dataType: "html",
             success: function(data) {
                 var code = $(data).filter("#code").html();
-                $code.html(code);
+                /* checking whether it is for .well or textarea */
+                if($code.hasClass("fix-caption-code")) {
+                    $code.html(code);
+                } else {
+                    $code.val(code);
+                }
                 var caption = $(data).filter("#caption").html();
-                $caption.val(caption);
+                try {
+                    $caption.val(caption);
+                } catch(e) {
+                    return;
+                }
             }
         });
     });
 
-    $form.submit(function(e) {
+    $caption_form.submit(function(e) {
         var example_id = $example.val();
         if(example_id != "0") {
             var caption = $caption.val();
@@ -105,7 +115,31 @@ $(document).ready(function() {
                 type: "POST",
                 data: {
                     example_id: example_id,
-                caption: caption
+                    caption: caption
+                },
+                dataType: "html",
+                success: function(data) {
+                    $chapter.trigger("change");
+                    $updating.hide();
+                    $done.show();
+                    $done.fadeOut("slow");
+                }
+            });
+        } else {
+            alert("No example selected.")
+        }
+        e.preventDefault();
+    });
+
+    $code_form.submit(function(e) {
+        var example_id = $example.val();
+        if(example_id != "0") {
+            var code = $code.val();
+            $.ajax({
+                url: modPath + "ajax/code/" + example_id,
+                type: "POST",
+                data: {
+                    code: code
                 },
                 dataType: "html",
                 success: function(data) {
