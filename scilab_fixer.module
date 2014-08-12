@@ -29,6 +29,12 @@
             "weight" => 2,
             "type" => MENU_LOCAL_TASK
         );
+        $items["fix/aicte/in"] = array(
+            "title"  => "Mark Indian edition books",
+            "page callback" => "scilab_fixer_aicte_in_all",
+            "access arguments" => array("fix scilab"),
+            "type" => MENU_CALLBACK
+        );
         $items["fix/code"] = array(
             "title"  => "Edit TBC code",
             "page callback" => "scilab_fixer_code_all",
@@ -194,6 +200,14 @@
             $example_path = $uploads_dir . $row->filepath;
             file_put_contents($example_path, $code);
             $data .= "updated";
+        } else if($item == "ind-ed" && $key) {
+            $query = "
+                UPDATE textbook_companion_aicte
+                SET ind = !ind
+                WHERE id = %d
+            ";
+            db_query($query, $key);
+            $data .= "updated";
         } else {
             $data = "Nothing to display.";
         }
@@ -353,6 +367,47 @@
             }
             $page_content .= theme("table", $headers, $rows);
         }
+        return $page_content;
+    }
+
+    function scilab_fixer_aicte_in_all(){
+        $page_content = "";
+        $query = "
+            SELECT * FROM textbook_companion_aicte
+        ";
+        $result = db_query($query);
+        $headers = array(
+            "Book", "Publisher", "Action"
+        );
+        $rows = array();
+        while($row = db_fetch_object($result)) {
+            $item = array(
+                "data" => array(
+                    "{$row->book}<br>by{$row->author}",
+                    $row->publisher,
+                ),
+            );
+            $ind_options = array(
+                /* # linking in drupal l() */
+                "fragment" => " ",
+                "external" => TRUE,
+                "attributes" => array(
+                    "class" => "ind-ed",
+                    "data-aicte" => "{$row->id}",
+                )
+            );
+            /* ind-ed link */
+            if($row->ind) {
+                array_push($item["data"], l("Unmark", "", $ind_options));
+            } else {
+                array_push($item["data"], l("Mark", "", $ind_options));
+            }
+            if($row->ind) {
+                $item["class"] .= " orange";
+            }
+            array_push($rows, $item);
+        }
+        $page_content .= theme("table", $headers, $rows);
         return $page_content;
     }
 

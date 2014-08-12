@@ -154,4 +154,30 @@ $(document).ready(function() {
         }
         e.preventDefault();
     });
+
+    /* toggle in edition */
+    $ind_ed = $(".ind-ed");
+    
+    $ind_ed.click(function(e) {
+        var aicte_id = $(this).attr("data-aicte");
+        $t = $(this);
+        $.ajax({
+            url: modPath + "ajax/ind-ed/" + aicte_id,
+            type: "GET",
+            dataType: "html",
+            success: function(data) {
+                $tr = $t.parents("tr:first");
+                if($tr.hasClass("orange")) {
+                    $t.parents("tr:first").removeClass("orange");
+                    $t.html("Mark");
+                } else {
+                    $t.parents("tr:first").addClass("orange");
+                    $t.html("Unmark");
+                }
+                console.log(data);
+            },
+        });
+        e.preventDefault();
+    });
+
 });

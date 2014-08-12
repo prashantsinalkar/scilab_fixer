@@ -36,3 +36,6 @@ textarea#edit-code {
     height: 300px;
     width: 650px;
 }
+.orange {
+    background: #FF9933 !important;
+}
