@@ -39,3 +39,9 @@ textarea#edit-code {
 .orange {
     background: #FF9933 !important;
 }
+.sync-msg {
+    font-size: .8em;
+}
+.messages.success {
+    background: lightgreen;
+}

@@ -1,6 +1,9 @@
 $(document).ready(function() {
     var basePath = Drupal.settings.basePath;
     var modPath = basePath + "fix/";
+    var modPath1 = basePath + "fix/aicte/book/";
+
+
 
     $category = $("#fix-tbc-form #edit-category");
     $book = $("#fix-tbc-form #edit-book");
@@ -153,6 +156,20 @@ $(document).ready(function() {
             alert("No example selected.")
         }
         e.preventDefault();
+    });
+
+$Selected = $(".selected");
+    $Selected.click(function (e) {
+        $(".sync-msg").remove();
+        $(this).after("<span class='sync-msg'>Saving...</span>");
+        $.ajax({
+            url: modPath1 + "ajax/selected/" + $(this).attr("data-bid"),
+                 success: function() {	
+                $(".sync-msg").remove();
+                console.log ("success");
+            }
+        });
+ 
     });
 
     /* toggle in edition */
