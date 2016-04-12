@@ -1,3 +1,4 @@
 name = Scilab fixer
-description = Module to fix scilab bugs
-core = 6.x
+description = Module to fix scilab code bugs
+core = 7.x
+package = IITB

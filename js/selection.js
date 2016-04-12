@@ -1,3 +1,6 @@
+var jQuery = jQuery.noConflict();
+
+
 function getSelectionText(divID) {
     var selectedText = "";
     if (window.getSelection) {
@@ -15,12 +18,12 @@ function getSelectionText(divID) {
     }
     return selectedText;
 }
-$(document).ready(function() {
-    $(".fix-caption-code").mousedown(function() {
-        $("#edit-caption").val("");
+jQuery(document).ready(function() {
+    jQuery(".fix-caption-code").mousedown(function() {
+        jQuery("#edit-caption").val("");
     });
-    $(".fix-caption-code").mouseup(function() {
+    jQuery(".fix-caption-code").mouseup(function() {
         quotedText = getSelectionText("#fix-caption-code");
-        $("#edit-caption").val(quotedText);
+        jQuery("#edit-caption").val(quotedText);
     });
 });

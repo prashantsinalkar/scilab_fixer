@@ -1,3 +1,4 @@
+(function ($) {
 $(document).ready(function() {
     var basePath = Drupal.settings.basePath;
     var modPath = basePath + "fix/";
@@ -15,7 +16,7 @@ $(document).ready(function() {
     $code_form = $("#scilab-fixer-code-form");
     $updating = $("#fix-tbc-page #updating");
     $done = $("#fix-tbc-page #done");
-   /* $example.attr("multiple", "enabled");*/
+    $example.attr("multiple", "enabled");
 
     function reset() {
         for (var i = 0, l = arguments.length; i < l; i ++) {
@@ -198,3 +199,4 @@ $Selected = $(".selected");
     });
 
 });
+})(jQuery);
