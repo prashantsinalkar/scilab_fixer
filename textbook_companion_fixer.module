@@ -146,7 +146,6 @@ function scilab_fixer_caption_all()
 	$page_content .= "<div id='fix-tbc-page'>";
 	$page_content .= "<center><span id='updating'>Updating...</span></center>";
 	$page_content .= "<span id='done'>Done.</span>";
-	// $page_content .= drupal_get_form("scilab_fixer_caption_form");
 	$scilab_fixer_caption_form = drupal_get_form("scilab_fixer_caption_form");
 	$page_content .= drupal_render($scilab_fixer_caption_form);
 	$page_content .= "</div>";
@@ -644,8 +643,8 @@ function scilab_fixer_code_all()
 }
 function scilab_fixer_init()
 {
-	drupal_add_css(drupal_get_path("module", "textbook_ companion_fixer") . "/css/textbook_ companion_fixer.css");
-	drupal_add_js(drupal_get_path("module", "textbook_ companion_fixer") . "/js/textbook_ companion_fixer.js");
+	drupal_add_css(drupal_get_path("module", "textbook_companion_fixer") . "/css/textbook_companion_fixer.css");
+	drupal_add_js(drupal_get_path("module", "textbook_companion_fixer") . "/js/textbook_companion_fixer.js");
 	//drupal_add_js(drupal_get_path("module", "scilab_fixer") . "/js/jquery-noconfilct.js");
-	drupal_add_js(drupal_get_path("module", "textbook_ companion_fixer") . "/js/selection.js");
+	drupal_add_js(drupal_get_path("module", "textbook_companion_fixer") . "/js/selection.js");
 }
