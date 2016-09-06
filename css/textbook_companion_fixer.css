@@ -6,9 +6,9 @@
     width: 620px;
     overflow-x: auto;
 }
-#fix-tbc-form #edit-example {
+/*#fix-tbc-form #edit-example {
     height: 250px;
-}
+}*/
 #fix-tbc-page #updating,
 #fix-tbc-page #done {
     display: none;
