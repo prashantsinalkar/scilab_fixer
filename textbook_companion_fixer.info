@@ -1,0 +1,4 @@
+name = Textbook Companion fixer
+description = Module to fix scilab code bugs
+core = 7.x
+package = IITB

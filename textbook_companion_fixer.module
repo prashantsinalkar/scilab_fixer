@@ -1,0 +1,652 @@
+<?php
+function textbook_companion_fixer_menu()
+{
+	$items = array();
+	$items["textbook_companion_fixer/caption"] = array(
+		"title" => "Fix TBC captions",
+		"page callback" => "scilab_fixer_caption_all",
+		"access arguments" => array(
+			"fix scilab"
+		),
+		"type" => MENU_NORMAL_ITEM
+	);
+	$items["textbook_companion_fixer/aicte"] = array(
+		"title" => "Add AICTE books",
+		"page callback" => "scilab_fixer_aicte_all",
+		"access arguments" => array(
+			"fix scilab"
+		),
+		"weight" => 30,
+		"type" => MENU_NORMAL_ITEM
+	);
+	$items["textbook_companion_fixer/aicte/new"] = array(
+		"title" => "Add AICTE books",
+		"page callback" => "scilab_fixer_aicte_all",
+		"access arguments" => array(
+			"fix scilab"
+		),
+		"weight" => 1,
+		"type" => MENU_DEFAULT_LOCAL_TASK
+	);
+	$items["textbook_companion_fixer/aicte/edit"] = array(
+		"title" => "Edit AICTE books",
+		"page callback" => "scilab_fixer_aicte_edit_all",
+		"access arguments" => array(
+			"fix scilab"
+		),
+		"weight" => 2,
+		"type" => MENU_LOCAL_TASK
+	);
+	$items["textbook_companion_fixer/aicte/in"] = array(
+		"title" => "Mark Indian edition books",
+		"page callback" => "scilab_fixer_aicte_in_all",
+		"access arguments" => array(
+			"fix scilab"
+		),
+		"type" => MENU_CALLBACK
+	);
+	$items["textbook_companion_fixer/code"] = array(
+		"title" => "Edit TBC code",
+		"page callback" => "scilab_fixer_code_all",
+		"access arguments" => array(
+			"fix scilab"
+		),
+		"type" => MENU_NORMAL_ITEM
+	);
+	$items["textbook_companion_fixer/ajax"] = array(
+		"page callback" => "scilab_fixer_ajax",
+		"access callback" => TRUE,
+		"type" => MENU_CALLBACK
+	);
+	$items["textbook_companion_fixer/aicte/book/ajax"] = array(
+		"page callback" => "scilab_fixer_aicte_ajax",
+		"access callback" => TRUE,
+		"type" => MENU_CALLBACK
+	);
+	return $items;
+}
+function textbook_companion_fixer_permission()
+{
+	return array(
+		"fix scilab" => array(
+			"title" => t("fix scilab code"),
+			'restrict access' => TRUE
+		)
+	);
+}
+function scilab_fixer_caption_form($form, &$form_state)
+{
+	$form = array();
+	$form["wrapper"] = array(
+		"#type" => "fieldset",
+		"#title" => "Caption change form",
+		"#prefix" => "<div id='fix-tbc-form'>",
+		"#suffix" => "</div>"
+	);
+	$form["wrapper"]["category"] = array(
+		"#type" => "select",
+		"#title" => t("Please select the category"),
+		'#options' => _tbc_fixer_list_of_category(),
+	);
+	$form["wrapper"]["book"] = array(
+		"#type" => "select",
+		"#title" => t("Please select the book."),
+		"#options" => array(
+			0 => "Please select a book"
+		),
+		"#prefix" => "<div class='select-book'>",
+		"#suffix" => "</div>"
+	);
+	$form["wrapper"]["chapter"] = array(
+		"#type" => "select",
+		"#title" => t("Please select the chapter"),
+		"#options" => array(
+			0 => "Please select a chapter"
+		),
+		"#prefix" => "<div class='select-chapter'>",
+		"#suffix" => "</div>"
+	);
+	$form["wrapper"]["example"] = array(
+		"#type" => "select",
+		"#title" => t("Please select the example"),
+		"#options" => array(
+			0 => "Please select a example"
+		),
+		"#prefix" => "<div class='select-example'>",
+		"#suffix" => "</div>"
+	);
+	$form["wrapper"]["caption"] = array(
+		"#type" => "textfield",
+		"#title" => t("Enter new caption"),
+		"#prefix" => "<div class='enter-caption'>",
+		"#suffix" => "</div>"
+	);
+	$form["wrapper"]["submit"] = array(
+		"#type" => "submit",
+		"#value" => "Update",
+		"#prefix" => "<div class='update-button'>",
+		"#suffix" => "</div>"
+	);
+	$form["wrapper"]["code_wrapper"] = array(
+		"#type" => "fieldset",
+		"#description" => t("No code to display"),
+		"#attributes" =>array("onclick" => "return check();"),
+		"#prefix" => "<div class='well'><pre id='edit-code' class='fix-caption-code'>",
+		"#suffix" => "</pre></div>"
+	);
+	return $form;
+}
+function scilab_fixer_caption_all()
+{
+	$page_content = "";
+	$page_content .= "<div id='fix-tbc-page'>";
+	$page_content .= "<center><span id='updating'>Updating...</span></center>";
+	$page_content .= "<span id='done'>Done.</span>";
+	$scilab_fixer_caption_form = drupal_get_form("scilab_fixer_caption_form");
+	$page_content .= drupal_render($scilab_fixer_caption_form);
+	$page_content .= "</div>";
+	$page_content .= "<small>* Selecting text from above code-area with mouse will add it to the caption textbox.</small>";
+	return $page_content;
+}
+function scilab_fixer_ajax($item, $key)
+{
+	$data = "";
+	if ($item == "category" && $key)
+	{
+		/* $query = "
+		SELECT pre.id AS id, pre.book, pre.author FROM textbook_companion_preference pre
+		LEFT JOIN textbook_companion_proposal pro ON pro.id = pre.proposal_id
+		WHERE pro.proposal_status = 3 AND pre.approval_status = 1 AND pre.category = %d
+		ORDER BY pre.book ASC
+		";
+		$result = db_query($query, $key);*/
+		$query = db_select('textbook_companion_preference', 'pre');
+		$query->fields('pre', array(
+			'id',
+			'book',
+			'author'
+		));
+		$query->leftJoin('textbook_companion_proposal', 'pro', 'pro.id = pre.proposal_id');
+		$query->condition('pro.proposal_status', 3);
+		$query->condition('pre.approval_status', 1);
+		$query->condition('pre.category', $key);
+		$query->orderBy('pre.book', 'ASC');
+		$result = $query->execute();
+		$data .= "<option value='0'>Please select the book.</option>";
+		while ($row = $result->fetchObject())
+		{
+			$data .= "<option value='{$row->id}'>{$row->book} ({$row->author})</option>";
+		} //$row = $result->fetchObject()
+	} //$item == "category" && $key
+	else if ($item == "book" && $key)
+	{
+		/*$query = "SELECT * FROM {textbook_companion_chapter} WHERE preference_id = %d ORDER BY number";
+		$result = db_query($query, $key);*/
+		$query = db_select('textbook_companion_chapter');
+		$query->fields('textbook_companion_chapter');
+		$query->condition('preference_id', $key);
+		$query->orderBy('number', 'ASC');
+		$result = $query->execute();
+		$data .= "<option value='0'>Please select the chapter.</option>";
+		while ($row = $result->fetchObject())
+		{
+			$data .= "<option value='{$row->id}'>{$row->number} {$row->name}</option>";
+		} //$row = $result->fetchObject()
+	} //$item == "book" && $key
+	else if ($item == "chapter" && $key)
+	{
+		/*$query = "SELECT * FROM {textbook_companion_example} WHERE chapter_id = %d ORDER BY number";
+		$result = db_query($query, $key);*/
+		$query = db_select('textbook_companion_example');
+		$query->fields('textbook_companion_example');
+		$query->condition('chapter_id', $key);
+		$query->orderBy('number', 'ASC');
+		$result = $query->execute();
+		$data .= "<option value='0'>Please select the example.</option>";
+		while ($row = $result->fetchObject())
+		{
+			$data .= "<option value='{$row->id}'>{$row->number} {$row->caption}</option>";
+		} //$row = $result->fetchObject()
+	} //$item == "chapter" && $key
+	else if ($item == "example" && $key)
+	{
+		/*$query = "
+		SELECT * FROM textbook_companion_example_files fil
+		LEFT JOIN textbook_companion_example exa ON exa.id = fil.example_id
+		WHERE example_id = %d
+		";
+		$result = db_query($query, $key);*/
+		$query = db_select('textbook_companion_example_files', 'fil');
+		$query->fields('fil');
+		$query->leftJoin('textbook_companion_example', 'exa', 'exa.id = fil.example_id');
+		$query->condition('example_id', $key);
+		$result = $query->execute();
+		$row = $result->fetchObject();
+		/* fetching example file data */
+		$uploads_dir = $_SERVER['DOCUMENT_ROOT'] . base_path() . "uploads/";
+		$example_path = $uploads_dir . $row->filepath;
+		$example = file_get_contents($example_path);
+		$data .= "<div id='caption'>{$row->caption}</div>";
+		$data .= "<div id='code'>{$example}</div>";
+	} //$item == "example" && $key
+	else if ($item == "update")
+	{
+		$example_id = $_POST["example_id"];
+		$caption = $_POST["caption"];
+		/*$query = "
+		UPDATE textbook_companion_example
+		SET caption = '%s'
+		WHERE id = %d
+		";
+		$result = db_query($query, $caption, $example_id);*/
+		$query = db_update('textbook_companion_example');
+		$query->fields(array(
+			'caption' => $caption
+		));
+		$query->condition('id', $example_id);
+		$result = $query->execute();
+		$data .= "Updated";
+	} //$item == "update"
+	else if ($item == "code" && $key)
+	{
+		$code = $_POST["code"];
+		/*$query = "
+		SELECT * FROM textbook_companion_example_files
+		WHERE example_id = %d AND filetype = 'S'
+		";
+		$result = db_query($query, $key);*/
+		$query = db_select('textbook_companion_example_files');
+		$query->fields('textbook_companion_example_files');
+		$query->condition('example_id', $key);
+		$query->condition('filetype', 'S');
+		$result = $query->execute();
+		$row = $result->fetchObject();
+		$uploads_dir = $_SERVER['DOCUMENT_ROOT'] . base_path() . "uploads/";
+		$example_path = $uploads_dir . $row->filepath;
+		file_put_contents($example_path, $code);
+		$data .= "updated";
+	} //$item == "code" && $key
+	else if ($item == "ind-ed" && $key)
+	{
+		$query = "
+                UPDATE textbook_companion_aicte
+                SET ind = !ind
+                WHERE id = :id
+            ";
+		$args = array(
+			":id" => $key
+		);
+		db_query($query, $args);
+		$data .= "updated";
+	} //$item == "ind-ed" && $key
+	else
+	{
+		$data = "<option value='0'>Please select a book</option>";
+	}
+	echo $data;
+	exit();
+}
+function scilab_fixer_aicte_ajax($item = "", $key = "")
+{
+	$data = "";
+	if ($item == "selected")
+	{
+		$query = "
+                UPDATE textbook_companion_aicte
+                SET selected = !selected
+                WHERE id =  :id
+            ";
+		$args = array(
+			":id" => $key
+		);
+		db_query($query, $args);
+		$data = "updated";
+	} //$item == "selected"
+	echo $data;
+	exit();
+}
+function scilab_fixer_aicte_form($form, $form_state, $aicte_id = '')
+{
+	/*$query = "
+	SELECT * FROM textbook_companion_aicte
+	WHERE id = {$aicte_id}
+	";
+	$result = db_query($query);*/
+	$query = db_select('textbook_companion_aicte');
+	$query->fields('textbook_companion_aicte');
+	$query->condition('id', $aicte_id);
+	$result = $query->execute();
+	$row = $result->fetchObject();
+	$form = array();
+	$form["book"] = array(
+		"#type" => "textfield",
+		"#title" => "Book Name",
+		"#default_value" => $row->book,
+		"#required" => TRUE
+	);
+	$form["author"] = array(
+		"#type" => "textfield",
+		"#title" => "Author",
+		"#default_value" => $row->author,
+		"#required" => TRUE
+	);
+	$form["category"] = array(
+		"#type" => "select",
+		"#title" => "Book Category",
+		'#options' => _tbc_fixer_list_of_category(),
+		"#default_value" => $row->category,
+		"#required" => TRUE
+	);
+	$form["isbn"] = array(
+		"#type" => "textfield",
+		"#title" => "ISBN",
+		"#default_value" => $row->isbn,
+		"#required" => FALSE
+	);
+	$form["publisher"] = array(
+		"#type" => "textfield",
+		"#title" => "Publisher",
+		"#default_value" => $row->publisher,
+		"#required" => TRUE
+	);
+	$form["edition"] = array(
+		"#type" => "textfield",
+		"#title" => "Edition",
+		"#default_value" => $row->edition,
+		"#required" => TRUE
+	);
+	$form["year"] = array(
+		"#type" => "textfield",
+		"#title" => "Year of publication",
+		"#default_value" => $row->year,
+		"#required" => TRUE
+	);
+	$form["aicte_id"] = array(
+		"#type" => "hidden",
+		"#value" => $row->id
+	);
+	$form["submit"] = array(
+		"#type" => "submit",
+		"#value" => "Submit"
+	);
+	return $form;
+}
+function scilab_fixer_aicte_form_validate($form, &$form_state)
+{
+	if (!$form_state["values"]["category"])
+	{
+		form_set_error("category", "Please select a category.");
+	} //!$form_state["values"]["category"]
+	if (!is_numeric($form_state["values"]["edition"]))
+	{
+		form_set_error("edition", "Only digits are allowed.");
+	} //!is_numeric($form_state["values"]["edition"])
+	if (!is_numeric($form_state["values"]["year"]) && strlen($form["values"]["year"]) != 4)
+	{
+		form_set_error("year", "Please enter a valid year. eg: 2011.");
+	} //!is_numeric($form_state["values"]["year"]) && strlen($form["values"]["year"]) != 4
+}
+function scilab_fixer_aicte_form_submit($form, &$form_state)
+{
+	$v = $form_state["values"];
+	if ($v["aicte_id"])
+	{
+		/*$query = "
+		UPDATE textbook_companion_aicte
+		SET book = '%s', author = '%s', category = %d,
+		isbn = '%s', publisher = '%s', edition = %d,
+		year = %d 
+		WHERE id = %d
+		";
+		$result = db_query($query, 
+		$v["book"], $v["author"], $v["category"], $v["isbn"],
+		$v["publisher"], $v["edition"], $v["year"], $v["aicte_id"]
+		);*/
+		$query = db_update('textbook_companion_aicte');
+		$query->fields(array(
+			'book' => $v["book"],
+			'author' => $v["author"],
+			'category' => $v["category"],
+			'isbn' => $v["isbn"],
+			'publisher' => $v["publisher"],
+			'edition' => $v["edition"],
+			'year' => $v["year"]
+		));
+		$query->condition('id', $v["aicte_id"]);
+		$num_updated = $query->execute();
+		drupal_set_message("Book updated successfully", "status");
+	} //$v["aicte_id"]
+	else
+	{
+		$query = "
+                INSERT INTO textbook_companion_aicte
+                (book, author, category, isbn, publisher, edition, year)
+                VALUES
+                (:book, :author, :category, :isbn, :publisher, :edition, :year)
+                ";
+		$args = array(
+			':book' => $v["book"],
+			':author' => $v["author"],
+			':category' => $v["category"],
+			':isbn' => $v["isbn"],
+			':publisher' => $v["publisher"],
+			':edition' => $v["edition"],
+			':year' => $v["year"]
+		);
+		$result = db_query($query, $args);
+		drupal_set_message("Book added successfully", "status");
+	}
+}
+function scilab_fixer_aicte_all()
+{
+	$page_content = "";
+	$scilab_fixer_aicte_form = drupal_get_form("scilab_fixer_aicte_form");
+	$page_content .= drupal_render($scilab_fixer_aicte_form);
+	return $page_content;
+}
+function scilab_fixer_aicte_edit_all($aicte_id = 0)
+{
+	$page_content = "";
+	if ($aicte_id)
+	{
+		$scilab_fixer_aicte_form = drupal_get_form("scilab_fixer_aicte_form", $aicte_id);
+		$page_content .= drupal_render($scilab_fixer_aicte_form);
+	} //$aicte_id
+	else
+	{
+		/*$query = "
+		SELECT * FROM textbook_companion_aicte
+		ORDER BY time DESC
+		";
+		$result = db_query($query);*/
+		$query = db_select('textbook_companion_aicte');
+		$query->fields('textbook_companion_aicte');
+		$query->orderBy('time', 'DESC');
+		$result = $query->execute();
+		$headers = array(
+			"Book",
+			"Author",
+			"Edition",
+			"Action"
+		);
+		$rows = array();
+		while ($row = $result->fetchObject())
+		{
+			$item = array(
+				"{$row->book}",
+				"{$row->author}",
+				"{$row->edition}",
+				l(t("Edit"), "fix/aicte/edit/{$row->id}")
+			);
+			if ($row->selected)
+			{
+				$check = "<input class='selected' type='checkbox' data-bid='{$row->id}' checked>";
+			} //$row->selected
+			else
+			{
+				$check = "<input class='selected' type='checkbox' data-bid='{$row->id}'>";
+			}
+			array_push($item, $check);
+			array_push($rows, $item);
+		} //$row = $result->fetchObject()
+		//$page_content .= theme("table", $headers, $rows);
+		$page_content .= theme("table", array(
+			'header' => $headers,
+			'rows' => $rows
+		));
+	}
+	return $page_content;
+}
+function scilab_fixer_aicte_in_all()
+{
+	$page_content = "";
+	/*$query = "
+	SELECT * FROM textbook_companion_aicte
+	";
+	$result = db_query($query);*/
+	$query = db_select('textbook_companion_aicte');
+	$query->fields('textbook_companion_aicte');
+	$result = $query->execute();
+	$headers = array(
+		"Book",
+		"Publisher",
+		"Action"
+	);
+	$rows = array();
+	while ($row = $result->fetchObject())
+	{
+		$item = array(
+			"data" => array(
+				"{$row->book}<br>by{$row->author}",
+				$row->publisher
+			)
+		);
+		$ind_options = array(
+			/* # linking in drupal l() */
+			"fragment" => " ",
+			"external" => TRUE,
+			"attributes" => array(
+				"class" => "ind-ed",
+				"data-aicte" => "{$row->id}"
+			)
+		);
+		/* ind-ed link */
+		if ($row->ind)
+		{
+			array_push($item["data"], l("Unmark", "", $ind_options));
+		} //$row->ind
+		else
+		{
+			array_push($item["data"], l("Mark", "", $ind_options));
+		}
+		if ($row->ind)
+		{
+			$item["class"] .= " orange";
+		} //$row->ind
+		array_push($rows, $item);
+	} //$row = $result->fetchObject()
+	$page_content .= theme('table', array(
+		'header' => $headers,
+		'rows' => $rows
+	));
+	return $page_content;
+}
+function scilab_fixer_code_form($form, &$form_state)
+{
+	$form = array();
+	$form["code_edit"] = array(
+		"#type" => "fieldset",
+		"#title" => "Code edit form",
+		"#prefix" => "<div id='fix-tbc-form'>",
+		"#suffix" => "</div>"
+	);
+	$form["code_edit"]["category"] = array(
+		"#type" => "select",
+		"#title" => t("Please select the category"),
+		'#options' => _tbc_fixer_list_of_category(),
+	);
+	$form["code_edit"]["book"] = array(
+		"#type" => "select",
+		"#title" => t("Please select the book."),
+		"#options" => array(
+			0 => "Please select a book"
+		),
+		"#prefix" => "<div class='select-book'>",
+		"#suffix" => "</div>"
+	);
+	$form["code_edit"]["chapter"] = array(
+		"#type" => "select",
+		"#title" => t("Please select the chapter"),
+		"#options" => array(
+			0 => "Please select a chapter"
+		),
+		"#prefix" => "<div class='select-chapter'>",
+		"#suffix" => "</div>"
+	);
+	$form["code_edit"]["example"] = array(
+		"#type" => "select",
+		"#title" => t("Please select the example"),
+		"#options" => array(
+			0 => "Please select a example"
+		),
+		"#prefix" => "<div class='select-example'>",
+		"#suffix" => "</div>"
+	);
+	$form["code_edit"]["code"] = array(
+		"#type" => "textarea",
+		"#title" => t("Code Editor"),
+		'#resizable' => FALSE,
+		"#prefix" => "<div class='example-code-edit'>",
+		"#suffix" => "</div>"
+	);
+	$form["code_edit"]["submit"] = array(
+		"#type" => "submit",
+		"#value" => "Update",
+		"#prefix" => "<div class='update-button'>",
+		"#suffix" => "</div>"
+	);
+	return $form;
+}
+function scilab_fixer_code_all()
+{
+	$page_content = "";
+	$page_content .= "<div id='fix-tbc-page'>";
+	$page_content .= "<center><span id='updating'>Updating...</span></center>";
+	$page_content .= "<span id='done'>Done.</span>";
+	$scilab_fixer_code_form = drupal_get_form("scilab_fixer_code_form");
+	$page_content .= drupal_render($scilab_fixer_code_form);
+	$page_content .= "</div>";
+	return $page_content;
+}
+function _tbc_fixer_list_of_category($category_id = NULL)
+{
+	$category[0] = "Please select";
+	if ($category_id == NULL)
+	{
+		$query = db_select('list_of_category');
+		$query->fields('list_of_category');
+		$query->orderBy('id', 'ASC');
+		$category_list = $query->execute();
+	} //$category_id == NULL
+	else
+	{
+		$query = db_select('list_of_category');
+		$query->fields('list_of_category');
+		$query->condition('category_id', $category_id);
+		$query->orderBy('id', 'ASC');
+		$category_list = $query->execute();
+	}
+	while ($category_list_data = $category_list->fetchObject())
+	{
+		$category[$category_list_data->category_id] = $category_list_data->category_name;
+	} //$category_list_data = $category_list->fetchObject()
+	return $category;
+}
+function scilab_fixer_init()
+{
+	drupal_add_css(drupal_get_path("module", "textbook_companion_fixer") . "/css/textbook_companion_fixer.css");
+	drupal_add_js(drupal_get_path("module", "textbook_companion_fixer") . "/js/textbook_companion_fixer.js");
+	//drupal_add_js(drupal_get_path("module", "scilab_fixer") . "/js/jquery-noconfilct.js");
+	drupal_add_js(drupal_get_path("module", "textbook_companion_fixer") . "/js/selection.js");
+}
+?>
