@@ -51,7 +51,7 @@ function textbook_companion_fixer_menu()
 		"access arguments" => array(
 			"fix scilab"
 		),
-		"type" => MENU_CALLBACK
+		"type" => MENU_NORMAL_ITEM
 	);
 	$items["textbook_companion_fixer/ajax"] = array(
 		"page callback" => "scilab_fixer_ajax",
