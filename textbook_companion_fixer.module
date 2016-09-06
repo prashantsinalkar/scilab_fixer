@@ -1,8 +1,8 @@
 <?php
-function scilab_fixer_menu()
+function textbook_companion_fixer_menu()
 {
 	$items = array();
-	$items["fix/caption"] = array(
+	$items["textbook_companion_fixer/caption"] = array(
 		"title" => "Fix TBC captions",
 		"page callback" => "scilab_fixer_caption_all",
 		"access arguments" => array(
@@ -10,7 +10,7 @@ function scilab_fixer_menu()
 		),
 		"type" => MENU_NORMAL_ITEM
 	);
-	$items["fix/aicte"] = array(
+	$items["textbook_companion_fixer/aicte"] = array(
 		"title" => "Add AICTE books",
 		"page callback" => "scilab_fixer_aicte_all",
 		"access arguments" => array(
@@ -19,7 +19,7 @@ function scilab_fixer_menu()
 		"weight" => 30,
 		"type" => MENU_NORMAL_ITEM
 	);
-	$items["fix/aicte/new"] = array(
+	$items["textbook_companion_fixer/aicte/new"] = array(
 		"title" => "Add AICTE books",
 		"page callback" => "scilab_fixer_aicte_all",
 		"access arguments" => array(
@@ -28,7 +28,7 @@ function scilab_fixer_menu()
 		"weight" => 1,
 		"type" => MENU_DEFAULT_LOCAL_TASK
 	);
-	$items["fix/aicte/edit"] = array(
+	$items["textbook_companion_fixer/aicte/edit"] = array(
 		"title" => "Edit AICTE books",
 		"page callback" => "scilab_fixer_aicte_edit_all",
 		"access arguments" => array(
@@ -37,7 +37,7 @@ function scilab_fixer_menu()
 		"weight" => 2,
 		"type" => MENU_LOCAL_TASK
 	);
-	$items["fix/aicte/in"] = array(
+	$items["textbook_companion_fixer/aicte/in"] = array(
 		"title" => "Mark Indian edition books",
 		"page callback" => "scilab_fixer_aicte_in_all",
 		"access arguments" => array(
@@ -45,7 +45,7 @@ function scilab_fixer_menu()
 		),
 		"type" => MENU_CALLBACK
 	);
-	$items["fix/code"] = array(
+	$items["textbook_companion_fixer/code"] = array(
 		"title" => "Edit TBC code",
 		"page callback" => "scilab_fixer_code_all",
 		"access arguments" => array(
@@ -53,19 +53,19 @@ function scilab_fixer_menu()
 		),
 		"type" => MENU_CALLBACK
 	);
-	$items["fix/ajax"] = array(
+	$items["textbook_companion_fixer/ajax"] = array(
 		"page callback" => "scilab_fixer_ajax",
 		"access callback" => TRUE,
 		"type" => MENU_CALLBACK
 	);
-	$items["fix/aicte/book/ajax"] = array(
+	$items["textbook_companion_fixer/aicte/book/ajax"] = array(
 		"page callback" => "scilab_fixer_aicte_ajax",
 		"access callback" => TRUE,
 		"type" => MENU_CALLBACK
 	);
 	return $items;
 }
-function scilab_fixer_perm()
+function textbook_companion_fixer_permission()
 {
 	return array(
 		"fix scilab" => array(
@@ -86,55 +86,51 @@ function scilab_fixer_caption_form($form, &$form_state)
 	$form["wrapper"]["category"] = array(
 		"#type" => "select",
 		"#title" => t("Please select the category"),
-		'#options' => array(
-			0 => 'Please select a category',
-			1 => 'Fluid Mechanics',
-			2 => 'Control Theory & Control Systems',
-			3 => 'Chemical Engineering',
-			4 => 'Thermodynamics',
-			5 => 'Mechanical Engineering',
-			6 => 'Signal Processing',
-			7 => 'Digital Communications',
-			8 => 'Electrical Technology',
-			9 => 'Mathematics & Pure Science',
-			10 => 'Analog Electronics',
-			11 => 'Digital Electronics',
-			12 => 'Computer Programming',
-			13 => 'Others'
-		)
+		'#options' => _tbc_fixer_list_of_category(),
 	);
 	$form["wrapper"]["book"] = array(
 		"#type" => "select",
 		"#title" => t("Please select the book."),
 		"#options" => array(
 			0 => "Please select a book"
-		)
+		),
+		"#prefix" => "<div class='select-book'>",
+		"#suffix" => "</div>"
 	);
 	$form["wrapper"]["chapter"] = array(
 		"#type" => "select",
 		"#title" => t("Please select the chapter"),
 		"#options" => array(
 			0 => "Please select a chapter"
-		)
+		),
+		"#prefix" => "<div class='select-chapter'>",
+		"#suffix" => "</div>"
 	);
 	$form["wrapper"]["example"] = array(
 		"#type" => "select",
 		"#title" => t("Please select the example"),
 		"#options" => array(
 			0 => "Please select a example"
-		)
+		),
+		"#prefix" => "<div class='select-example'>",
+		"#suffix" => "</div>"
 	);
 	$form["wrapper"]["caption"] = array(
 		"#type" => "textfield",
-		"#title" => t("Enter new caption")
+		"#title" => t("Enter new caption"),
+		"#prefix" => "<div class='enter-caption'>",
+		"#suffix" => "</div>"
 	);
 	$form["wrapper"]["submit"] = array(
 		"#type" => "submit",
-		"#value" => "Update"
+		"#value" => "Update",
+		"#prefix" => "<div class='update-button'>",
+		"#suffix" => "</div>"
 	);
 	$form["wrapper"]["code_wrapper"] = array(
 		"#type" => "fieldset",
 		"#description" => t("No code to display"),
+		"#attributes" =>array("onclick" => "return check();"),
 		"#prefix" => "<div class='well'><pre id='edit-code' class='fix-caption-code'>",
 		"#suffix" => "</pre></div>"
 	);
@@ -285,7 +281,7 @@ function scilab_fixer_ajax($item, $key)
 	} //$item == "ind-ed" && $key
 	else
 	{
-		$data = "Nothing to display.";
+		$data = "<option value='0'>Please select a book</option>";
 	}
 	echo $data;
 	exit();
@@ -337,22 +333,7 @@ function scilab_fixer_aicte_form($form, $form_state, $aicte_id = '')
 	$form["category"] = array(
 		"#type" => "select",
 		"#title" => "Book Category",
-		'#options' => array(
-			0 => 'Please select a category',
-			1 => 'Fluid Mechanics',
-			2 => 'Control Theory & Control Systems',
-			3 => 'Chemical Engineering',
-			4 => 'Thermodynamics',
-			5 => 'Mechanical Engineering',
-			6 => 'Signal Processing',
-			7 => 'Digital Communications',
-			8 => 'Electrical Technology',
-			9 => 'Mathematics & Pure Science',
-			10 => 'Analog Electronics',
-			11 => 'Digital Electronics',
-			12 => 'Computer Programming',
-			13 => 'Others'
-		),
+		'#options' => _tbc_fixer_list_of_category(),
 		"#default_value" => $row->category,
 		"#required" => TRUE
 	);
@@ -570,63 +551,59 @@ function scilab_fixer_aicte_in_all()
 	));
 	return $page_content;
 }
-function scilab_fixer_code_form($form_state)
+function scilab_fixer_code_form($form, &$form_state)
 {
 	$form = array();
-	$form["wrapper"] = array(
+	$form["code_edit"] = array(
 		"#type" => "fieldset",
 		"#title" => "Code edit form",
 		"#prefix" => "<div id='fix-tbc-form'>",
 		"#suffix" => "</div>"
 	);
-	$form["wrapper"]["category"] = array(
+	$form["code_edit"]["category"] = array(
 		"#type" => "select",
 		"#title" => t("Please select the category"),
-		'#options' => array(
-			0 => 'Please select a category',
-			1 => 'Fluid Mechanics',
-			2 => 'Control Theory & Control Systems',
-			3 => 'Chemical Engineering',
-			4 => 'Thermodynamics',
-			5 => 'Mechanical Engineering',
-			6 => 'Signal Processing',
-			7 => 'Digital Communications',
-			8 => 'Electrical Technology',
-			9 => 'Mathematics & Pure Science',
-			10 => 'Analog Electronics',
-			11 => 'Digital Electronics',
-			12 => 'Computer Programming',
-			13 => 'Others'
-		)
+		'#options' => _tbc_fixer_list_of_category(),
 	);
-	$form["wrapper"]["book"] = array(
+	$form["code_edit"]["book"] = array(
 		"#type" => "select",
 		"#title" => t("Please select the book."),
 		"#options" => array(
 			0 => "Please select a book"
-		)
+		),
+		"#prefix" => "<div class='select-book'>",
+		"#suffix" => "</div>"
 	);
-	$form["wrapper"]["chapter"] = array(
+	$form["code_edit"]["chapter"] = array(
 		"#type" => "select",
 		"#title" => t("Please select the chapter"),
 		"#options" => array(
 			0 => "Please select a chapter"
-		)
+		),
+		"#prefix" => "<div class='select-chapter'>",
+		"#suffix" => "</div>"
 	);
-	$form["wrapper"]["example"] = array(
+	$form["code_edit"]["example"] = array(
 		"#type" => "select",
 		"#title" => t("Please select the example"),
 		"#options" => array(
 			0 => "Please select a example"
-		)
+		),
+		"#prefix" => "<div class='select-example'>",
+		"#suffix" => "</div>"
 	);
-	$form["wrapper"]["code"] = array(
+	$form["code_edit"]["code"] = array(
 		"#type" => "textarea",
-		"#title" => t("Code Editor")
+		"#title" => t("Code Editor"),
+		'#resizable' => FALSE,
+		"#prefix" => "<div class='example-code-edit'>",
+		"#suffix" => "</div>"
 	);
-	$form["wrapper"]["submit"] = array(
+	$form["code_edit"]["submit"] = array(
 		"#type" => "submit",
-		"#value" => "Update"
+		"#value" => "Update",
+		"#prefix" => "<div class='update-button'>",
+		"#suffix" => "</div>"
 	);
 	return $form;
 }
@@ -641,6 +618,30 @@ function scilab_fixer_code_all()
 	$page_content .= "</div>";
 	return $page_content;
 }
+function _tbc_fixer_list_of_category($category_id = NULL)
+{
+	$category[0] = "Please select";
+	if ($category_id == NULL)
+	{
+		$query = db_select('list_of_category');
+		$query->fields('list_of_category');
+		$query->orderBy('id', 'ASC');
+		$category_list = $query->execute();
+	} //$category_id == NULL
+	else
+	{
+		$query = db_select('list_of_category');
+		$query->fields('list_of_category');
+		$query->condition('category_id', $category_id);
+		$query->orderBy('id', 'ASC');
+		$category_list = $query->execute();
+	}
+	while ($category_list_data = $category_list->fetchObject())
+	{
+		$category[$category_list_data->category_id] = $category_list_data->category_name;
+	} //$category_list_data = $category_list->fetchObject()
+	return $category;
+}
 function scilab_fixer_init()
 {
 	drupal_add_css(drupal_get_path("module", "textbook_companion_fixer") . "/css/textbook_companion_fixer.css");
@@ -648,3 +649,4 @@ function scilab_fixer_init()
 	//drupal_add_js(drupal_get_path("module", "scilab_fixer") . "/js/jquery-noconfilct.js");
 	drupal_add_js(drupal_get_path("module", "textbook_companion_fixer") . "/js/selection.js");
 }
+?>
