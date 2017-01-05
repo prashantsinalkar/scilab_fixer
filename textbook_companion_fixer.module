@@ -3,10 +3,10 @@ function textbook_companion_fixer_menu()
 {
 	$items = array();
 	$items["textbook_companion_fixer/caption"] = array(
-		"title" => "Fix TBC captions",
+		"title" => "Edit TBC captions",
 		"page callback" => "scilab_fixer_caption_all",
 		"access arguments" => array(
-			"fix scilab"
+			"fix scilab_code_caption"
 		),
 		"type" => MENU_NORMAL_ITEM
 	);
@@ -71,7 +71,12 @@ function textbook_companion_fixer_permission()
 		"fix scilab" => array(
 			"title" => t("fix scilab code"),
 			'restrict access' => TRUE
-		)
+		),
+		"fix scilab_code_caption" => array(
+                        "title" => t("fix scilab code caption"),
+                        'restrict access' => TRUE
+                )
+
 	);
 }
 function scilab_fixer_caption_form($form, &$form_state)
@@ -642,11 +647,10 @@ function _tbc_fixer_list_of_category($category_id = NULL)
 	} //$category_list_data = $category_list->fetchObject()
 	return $category;
 }
-function scilab_fixer_init()
+function textbook_companion_fixer_init()
 {
 	drupal_add_css(drupal_get_path("module", "textbook_companion_fixer") . "/css/textbook_companion_fixer.css");
 	drupal_add_js(drupal_get_path("module", "textbook_companion_fixer") . "/js/textbook_companion_fixer.js");
 	//drupal_add_js(drupal_get_path("module", "scilab_fixer") . "/js/jquery-noconfilct.js");
 	drupal_add_js(drupal_get_path("module", "textbook_companion_fixer") . "/js/selection.js");
 }
-?>
