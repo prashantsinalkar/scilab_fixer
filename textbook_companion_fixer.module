@@ -1,4 +1,5 @@
 <?php
+require_once('textbook_companion_fixer_email.inc');
 function textbook_companion_fixer_menu()
 {
 	$items = array();
@@ -63,6 +64,20 @@ function textbook_companion_fixer_menu()
 		"access callback" => TRUE,
 		"type" => MENU_CALLBACK
 	);
+	/* for admin */
+	$items['admin/settings/textbook_companion_fixer_settings'] = array(
+		'title' => 'textbook companion fixer Settings',
+		'description' => 'Textbook Companion Fixer Settings',
+		'page callback' => 'drupal_get_form',
+		'page arguments' => array(
+			'textbook_companion_fixer_settings_form'
+		),
+		'access arguments' => array(
+			'administer textbook companion fixer settings'
+		),
+		'type' => MENU_NORMAL_ITEM,
+		'file' => 'textbook_companion_fixer_settings.inc'
+	);
 	return $items;
 }
 function textbook_companion_fixer_permission()
@@ -73,10 +88,13 @@ function textbook_companion_fixer_permission()
 			'restrict access' => TRUE
 		),
 		"fix scilab_code_caption" => array(
-                        "title" => t("fix scilab code caption"),
-                        'restrict access' => TRUE
-                )
-
+			"title" => t("fix scilab code caption"),
+			'restrict access' => TRUE
+		),
+		"administer textbook companion fixer settings" => array(
+			"title" => t("administer textbook companion fixer settings"),
+			'restrict access' => TRUE
+		)
 	);
 }
 function scilab_fixer_caption_form($form, &$form_state)
@@ -91,7 +109,7 @@ function scilab_fixer_caption_form($form, &$form_state)
 	$form["wrapper"]["category"] = array(
 		"#type" => "select",
 		"#title" => t("Please select the category"),
-		'#options' => _tbc_fixer_list_of_category(),
+		'#options' => _tbc_fixer_list_of_category()
 	);
 	$form["wrapper"]["book"] = array(
 		"#type" => "select",
@@ -111,9 +129,21 @@ function scilab_fixer_caption_form($form, &$form_state)
 		"#prefix" => "<div class='select-chapter'>",
 		"#suffix" => "</div>"
 	);
+	$form["wrapper"]["chapter_name"] = array(
+		"#type" => "textfield",
+		"#title" => t("Enter new chapter name"),
+		"#size" => 255,
+		"#maxlength" => 255,
+		"#attributes" => array(
+			"Style" => "width:100%"
+		),
+		"#prefix" => "<div class='enter-chapter-name'>",
+		"#suffix" => "</div>"
+	);
 	$form["wrapper"]["example"] = array(
 		"#type" => "select",
 		"#title" => t("Please select the example"),
+		"#description" => t("<span style='color:red'>*Double click on example caption you want to edit</span>"),
 		"#options" => array(
 			0 => "Please select a example"
 		),
@@ -123,7 +153,20 @@ function scilab_fixer_caption_form($form, &$form_state)
 	$form["wrapper"]["caption"] = array(
 		"#type" => "textfield",
 		"#title" => t("Enter new caption"),
+		"#attributes" => array(
+			"Style" => "width:100%"
+		),
+		"#size" => 255,
+		"#maxlength" => 255,
 		"#prefix" => "<div class='enter-caption'>",
+		"#suffix" => "</div>"
+	);
+	$form["wrapper"]["chapter_example"] = array(
+		"#markup" => "<input type='checkbox' name='chapterchk' value='chapter' class='chapter-caption-chk'>
+						Update Chapter caption</input><br>
+					<input type='checkbox' name='examplechk' value='example' class='example-caption-chk'>
+					Update Example caption</input>",
+		"#prefix" => "<div class='chapter-example-chk'>",
 		"#suffix" => "</div>"
 	);
 	$form["wrapper"]["submit"] = array(
@@ -135,7 +178,9 @@ function scilab_fixer_caption_form($form, &$form_state)
 	$form["wrapper"]["code_wrapper"] = array(
 		"#type" => "fieldset",
 		"#description" => t("No code to display"),
-		"#attributes" =>array("onclick" => "return check();"),
+		"#attributes" => array(
+			"onclick" => "return check();"
+		),
 		"#prefix" => "<div class='well'><pre id='edit-code' class='fix-caption-code'>",
 		"#suffix" => "</pre></div>"
 	);
@@ -156,8 +201,8 @@ function scilab_fixer_caption_all()
 function scilab_fixer_ajax($item, $key)
 {
 	$data = "";
-	if ($item == "category" && $key)
-	{
+	global $user;
+	if ($item == "category" && $key) {
 		/* $query = "
 		SELECT pre.id AS id, pre.book, pre.author FROM textbook_companion_preference pre
 		LEFT JOIN textbook_companion_proposal pro ON pro.id = pre.proposal_id
@@ -178,13 +223,11 @@ function scilab_fixer_ajax($item, $key)
 		$query->orderBy('pre.book', 'ASC');
 		$result = $query->execute();
 		$data .= "<option value='0'>Please select the book.</option>";
-		while ($row = $result->fetchObject())
-		{
+		while ($row = $result->fetchObject()) {
 			$data .= "<option value='{$row->id}'>{$row->book} ({$row->author})</option>";
 		} //$row = $result->fetchObject()
 	} //$item == "category" && $key
-	else if ($item == "book" && $key)
-	{
+	else if ($item == "book" && $key) {
 		/*$query = "SELECT * FROM {textbook_companion_chapter} WHERE preference_id = %d ORDER BY number";
 		$result = db_query($query, $key);*/
 		$query = db_select('textbook_companion_chapter');
@@ -193,13 +236,11 @@ function scilab_fixer_ajax($item, $key)
 		$query->orderBy('number', 'ASC');
 		$result = $query->execute();
 		$data .= "<option value='0'>Please select the chapter.</option>";
-		while ($row = $result->fetchObject())
-		{
-			$data .= "<option value='{$row->id}'>{$row->number} {$row->name}</option>";
+		while ($row = $result->fetchObject()) {
+			$data .= "<option value='{$row->id}' data-chapterid='{$row->id}' data-chaptername='{$row->name}'>{$row->number}) {$row->name}</option>";
 		} //$row = $result->fetchObject()
 	} //$item == "book" && $key
-	else if ($item == "chapter" && $key)
-	{
+	else if ($item == "chapter" && $key) {
 		/*$query = "SELECT * FROM {textbook_companion_example} WHERE chapter_id = %d ORDER BY number";
 		$result = db_query($query, $key);*/
 		$query = db_select('textbook_companion_example');
@@ -208,13 +249,11 @@ function scilab_fixer_ajax($item, $key)
 		$query->orderBy('number', 'ASC');
 		$result = $query->execute();
 		$data .= "<option value='0'>Please select the example.</option>";
-		while ($row = $result->fetchObject())
-		{
-			$data .= "<option value='{$row->id}'>{$row->number} {$row->caption}</option>";
+		while ($row = $result->fetchObject()) {
+			$data .= "<option value='{$row->id}' data-exampleid='{$row->caption}'>{$row->number} {$row->caption}</option>";
 		} //$row = $result->fetchObject()
 	} //$item == "chapter" && $key
-	else if ($item == "example" && $key)
-	{
+	else if ($item == "example" && $key) {
 		/*$query = "
 		SELECT * FROM textbook_companion_example_files fil
 		LEFT JOIN textbook_companion_example exa ON exa.id = fil.example_id
@@ -234,8 +273,7 @@ function scilab_fixer_ajax($item, $key)
 		$data .= "<div id='caption'>{$row->caption}</div>";
 		$data .= "<div id='code'>{$example}</div>";
 	} //$item == "example" && $key
-	else if ($item == "update")
-	{
+	else if ($item == "update-example") {
 		$example_id = $_POST["example_id"];
 		$caption = $_POST["caption"];
 		/*$query = "
@@ -251,9 +289,95 @@ function scilab_fixer_ajax($item, $key)
 		$query->condition('id', $example_id);
 		$result = $query->execute();
 		$data .= "Updated";
+		/* sending email */
+		$email_to = $user->mail;
+		$from = variable_get('textbook_companion_from_email', '');
+		$bcc = variable_get('textbook_companion_fixer_bcc_emails', '');
+		$cc = variable_get('textbook_companion_fixer_cc_emails', '');
+		$params['example_updated']['example_id'] = $example_id;
+		$params['example_updated']['user_id'] = $user->uid;
+		$params['example_updated']['headers'] = array(
+			'From' => $from,
+			'MIME-Version' => '1.0',
+			'Content-Type' => 'text/plain; charset=UTF-8; format=flowed; delsp=yes',
+			'Content-Transfer-Encoding' => '8Bit',
+			'X-Mailer' => 'Drupal',
+			'Cc' => $cc,
+			'Bcc' => $bcc
+		);
+		if (!drupal_mail('textbook_companion_fixer', 'example_updated', $email_to, language_default(), $params, $from, TRUE)) {
+			$data .= 'Error sending email message.';
+		} //!drupal_mail('textbook_companion_fixer', 'example_updated', $email_to, language_default(), $params, $from, TRUE)
+	} //$item == "update-example"
+	else if ($item == "update-chapter") {
+		$chapter_id = $_POST["chapter_id"];
+		$chapter_caption = $_POST["chapter_caption"];
+		$query_chapter = db_update('textbook_companion_chapter');
+		$query_chapter->fields(array(
+			'name' => $chapter_caption
+		));
+		$query_chapter->condition('id', $chapter_id);
+		$result_chapter = $query_chapter->execute();
+		$data .= "Updated";
+		/* sending email */
+		$email_to = $user->mail;
+		$from = variable_get('textbook_companion_from_email', '');
+		$bcc = variable_get('textbook_companion_fixer_bcc_emails', '');
+		$cc = variable_get('textbook_companion_fixer_cc_emails', '');
+		$params['chapter_updated']['chapter_id'] = $chapter_id;
+		$params['chapter_updated']['user_id'] = $user->uid;
+		$params['chapter_updated']['headers'] = array(
+			'From' => $from,
+			'MIME-Version' => '1.0',
+			'Content-Type' => 'text/plain; charset=UTF-8; format=flowed; delsp=yes',
+			'Content-Transfer-Encoding' => '8Bit',
+			'X-Mailer' => 'Drupal',
+			'Cc' => $cc,
+			'Bcc' => $bcc
+		);
+		if (!drupal_mail('textbook_companion_fixer', 'chapter_updated', $email_to, language_default(), $params, $from, TRUE)) {
+			$data .= 'Error sending email message.';
+		} //!drupal_mail('textbook_companion_fixer', 'chapter_updated', $email_to, language_default(), $params, $from, TRUE)
+	} //$item == "update-chapter"
+	else if ($item == "update-both") {
+		$example_id = $_POST["example_id"];
+		$caption = $_POST["caption"];
+		$chapter_id = $_POST["chapter_id"];
+		$chapter_caption = $_POST["chapter_caption"];
+		$query_exmaple = db_update('textbook_companion_example');
+		$query_exmaple->fields(array(
+			'caption' => $caption
+		));
+		$query_exmaple->condition('id', $example_id);
+		$result_example = $query_exmaple->execute();
+		$query_chapter = db_update('textbook_companion_chapter');
+		$query_chapter->fields(array(
+			'name' => $chapter_caption
+		));
+		$query_chapter->condition('id', $chapter_id);
+		$result_chapter = $query_chapter->execute();
+		$data .= "Updated";
+		/* sending email */
+		$email_to = $user->mail;
+		$from = variable_get('textbook_companion_from_email', '');
+		$bcc = variable_get('textbook_companion_fixer_bcc_emails', '');
+		$cc = variable_get('textbook_companion_fixer_cc_emails', '');
+		$params['example_updated']['example_id'] = $example_id;
+		$params['example_updated']['user_id'] = $user->uid;
+		$params['example_updated']['headers'] = array(
+			'From' => $from,
+			'MIME-Version' => '1.0',
+			'Content-Type' => 'text/plain; charset=UTF-8; format=flowed; delsp=yes',
+			'Content-Transfer-Encoding' => '8Bit',
+			'X-Mailer' => 'Drupal',
+			'Cc' => $cc,
+			'Bcc' => $bcc
+		);
+		if (!drupal_mail('textbook_companion_fixer', 'chapter_example_updated', $email_to, language_default(), $params, $from, TRUE)) {
+			$data .= 'Error sending email message.';
+		} //!drupal_mail('textbook_companion_fixer', 'chapter_example_updated', $email_to, language_default(), $params, $from, TRUE)
 	} //$item == "update"
-	else if ($item == "code" && $key)
-	{
+	else if ($item == "code" && $key) {
 		$code = $_POST["code"];
 		/*$query = "
 		SELECT * FROM textbook_companion_example_files
@@ -271,8 +395,7 @@ function scilab_fixer_ajax($item, $key)
 		file_put_contents($example_path, $code);
 		$data .= "updated";
 	} //$item == "code" && $key
-	else if ($item == "ind-ed" && $key)
-	{
+	else if ($item == "ind-ed" && $key) {
 		$query = "
                 UPDATE textbook_companion_aicte
                 SET ind = !ind
@@ -284,8 +407,7 @@ function scilab_fixer_ajax($item, $key)
 		db_query($query, $args);
 		$data .= "updated";
 	} //$item == "ind-ed" && $key
-	else
-	{
+	else {
 		$data = "<option value='0'>Please select a book</option>";
 	}
 	echo $data;
@@ -294,8 +416,7 @@ function scilab_fixer_ajax($item, $key)
 function scilab_fixer_aicte_ajax($item = "", $key = "")
 {
 	$data = "";
-	if ($item == "selected")
-	{
+	if ($item == "selected") {
 		$query = "
                 UPDATE textbook_companion_aicte
                 SET selected = !selected
@@ -378,24 +499,20 @@ function scilab_fixer_aicte_form($form, $form_state, $aicte_id = '')
 }
 function scilab_fixer_aicte_form_validate($form, &$form_state)
 {
-	if (!$form_state["values"]["category"])
-	{
+	if (!$form_state["values"]["category"]) {
 		form_set_error("category", "Please select a category.");
 	} //!$form_state["values"]["category"]
-	if (!is_numeric($form_state["values"]["edition"]))
-	{
+	if (!is_numeric($form_state["values"]["edition"])) {
 		form_set_error("edition", "Only digits are allowed.");
 	} //!is_numeric($form_state["values"]["edition"])
-	if (!is_numeric($form_state["values"]["year"]) && strlen($form["values"]["year"]) != 4)
-	{
+	if (!is_numeric($form_state["values"]["year"]) && strlen($form["values"]["year"]) != 4) {
 		form_set_error("year", "Please enter a valid year. eg: 2011.");
 	} //!is_numeric($form_state["values"]["year"]) && strlen($form["values"]["year"]) != 4
 }
 function scilab_fixer_aicte_form_submit($form, &$form_state)
 {
 	$v = $form_state["values"];
-	if ($v["aicte_id"])
-	{
+	if ($v["aicte_id"]) {
 		/*$query = "
 		UPDATE textbook_companion_aicte
 		SET book = '%s', author = '%s', category = %d,
@@ -421,8 +538,7 @@ function scilab_fixer_aicte_form_submit($form, &$form_state)
 		$num_updated = $query->execute();
 		drupal_set_message("Book updated successfully", "status");
 	} //$v["aicte_id"]
-	else
-	{
+	else {
 		$query = "
                 INSERT INTO textbook_companion_aicte
                 (book, author, category, isbn, publisher, edition, year)
@@ -452,13 +568,11 @@ function scilab_fixer_aicte_all()
 function scilab_fixer_aicte_edit_all($aicte_id = 0)
 {
 	$page_content = "";
-	if ($aicte_id)
-	{
+	if ($aicte_id) {
 		$scilab_fixer_aicte_form = drupal_get_form("scilab_fixer_aicte_form", $aicte_id);
 		$page_content .= drupal_render($scilab_fixer_aicte_form);
 	} //$aicte_id
-	else
-	{
+	else {
 		/*$query = "
 		SELECT * FROM textbook_companion_aicte
 		ORDER BY time DESC
@@ -475,20 +589,17 @@ function scilab_fixer_aicte_edit_all($aicte_id = 0)
 			"Action"
 		);
 		$rows = array();
-		while ($row = $result->fetchObject())
-		{
+		while ($row = $result->fetchObject()) {
 			$item = array(
 				"{$row->book}",
 				"{$row->author}",
 				"{$row->edition}",
 				l(t("Edit"), "fix/aicte/edit/{$row->id}")
 			);
-			if ($row->selected)
-			{
+			if ($row->selected) {
 				$check = "<input class='selected' type='checkbox' data-bid='{$row->id}' checked>";
 			} //$row->selected
-			else
-			{
+			else {
 				$check = "<input class='selected' type='checkbox' data-bid='{$row->id}'>";
 			}
 			array_push($item, $check);
@@ -518,8 +629,7 @@ function scilab_fixer_aicte_in_all()
 		"Action"
 	);
 	$rows = array();
-	while ($row = $result->fetchObject())
-	{
+	while ($row = $result->fetchObject()) {
 		$item = array(
 			"data" => array(
 				"{$row->book}<br>by{$row->author}",
@@ -536,16 +646,13 @@ function scilab_fixer_aicte_in_all()
 			)
 		);
 		/* ind-ed link */
-		if ($row->ind)
-		{
+		if ($row->ind) {
 			array_push($item["data"], l("Unmark", "", $ind_options));
 		} //$row->ind
-		else
-		{
+		else {
 			array_push($item["data"], l("Mark", "", $ind_options));
 		}
-		if ($row->ind)
-		{
+		if ($row->ind) {
 			$item["class"] .= " orange";
 		} //$row->ind
 		array_push($rows, $item);
@@ -568,7 +675,7 @@ function scilab_fixer_code_form($form, &$form_state)
 	$form["code_edit"]["category"] = array(
 		"#type" => "select",
 		"#title" => t("Please select the category"),
-		'#options' => _tbc_fixer_list_of_category(),
+		'#options' => _tbc_fixer_list_of_category()
 	);
 	$form["code_edit"]["book"] = array(
 		"#type" => "select",
@@ -626,23 +733,20 @@ function scilab_fixer_code_all()
 function _tbc_fixer_list_of_category($category_id = NULL)
 {
 	$category[0] = "Please select";
-	if ($category_id == NULL)
-	{
+	if ($category_id == NULL) {
 		$query = db_select('list_of_category');
 		$query->fields('list_of_category');
 		$query->orderBy('id', 'ASC');
 		$category_list = $query->execute();
 	} //$category_id == NULL
-	else
-	{
+	else {
 		$query = db_select('list_of_category');
 		$query->fields('list_of_category');
 		$query->condition('category_id', $category_id);
 		$query->orderBy('id', 'ASC');
 		$category_list = $query->execute();
 	}
-	while ($category_list_data = $category_list->fetchObject())
-	{
+	while ($category_list_data = $category_list->fetchObject()) {
 		$category[$category_list_data->category_id] = $category_list_data->category_name;
 	} //$category_list_data = $category_list->fetchObject()
 	return $category;
