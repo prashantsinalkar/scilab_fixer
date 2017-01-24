@@ -35,6 +35,8 @@
 		}
 		$(".select-book").hide();
 		$(".select-chapter").hide();
+		$(".enter-chapter-name").hide();
+		$(".chapter-example-chk").hide();
 		$(".select-example").hide();
 		$(".enter-caption").hide();
 		$(".example-code-edit").hide();
@@ -46,14 +48,18 @@
 			if (category_id < 1) {
 				$(".select-book").hide();
 				$(".select-chapter").hide();
+				$(".enter-chapter-name").hide();
 				$(".select-example").hide();
 				$(".enter-caption").hide();
+				$(".chapter-example-chk").hide();
 				$(".example-code-edit").hide();
 				(".well").hide();
 				$(".update-button").hide();
 			} else {
 				$(".select-book").show();
 				$(".select-chapter").hide();
+				$(".enter-chapter-name").hide();
+				$(".chapter-example-chk").hide();
 				$(".select-example").hide();
 				$(".enter-caption").hide();
 				$(".example-code-edit").hide();
@@ -76,12 +82,16 @@
 				$(".select-chapter").hide();
 				$(".select-example").hide();
 				$(".enter-caption").hide();
+				$(".enter-chapter-name").hide();
+				$(".chapter-example-chk").hide();
 				$(".example-code-edit").hide();
 				$(".well").hide();
 				$(".update-button").hide();
 			} else {
 				$(".select-chapter").show();
 				$(".select-example").hide();
+				$(".enter-chapter-name").hide();
+				$(".chapter-example-chk").hide();
 				$(".enter-caption").hide();
 				$(".example-code-edit").hide();
 				$(".well").hide();
@@ -98,18 +108,24 @@
 		});
 		$chapter.change(function() {
 			reset("example", "caption");
+			var chapter_name = $('option:selected', this).attr("data-chaptername");
 			var chapter_id = $(this).val();
 			if (chapter_id < 1) {
 				$(".select-example").hide();
 				$(".enter-caption").hide();
+				$(".enter-chapter-name").hide();
+				$(".chapter-example-chk").hide();
 				$(".example-code-edit").hide();
 				$(".well").hide();
 				$(".update-button").hide();
 			} else {
 				$(".select-example").show();
+				$(".enter-chapter-name").show();
+				$(".chapter-example-chk").show();
+				$("#edit-chapter-name").val(chapter_name);
 				$(".enter-caption").hide();
 				$(".example-code-edit").hide();
-				$(".update-button").hide();
+				$(".update-button").show();
 			}
 			$.ajax({
 				url: modPath + "ajax/chapter/" + chapter_id,
@@ -121,9 +137,10 @@
 			});
 		});
 		$example.change(function() {
-			var example_id = $(this).val();
-			var example_caption = $(this).text();
 			reset("caption");
+			var example_id = $(this).val();
+			var example_name = $('option:selected', this).attr("data-exampleid");
+			var example_caption = $(this).text();
 			if (example_id < 1) {
 				$(".enter-caption").hide();
 				// $("#edit-caption").val("");
@@ -132,7 +149,7 @@
 				$(".update-button").hide();
 			} else {
 				$(".enter-caption").show();
-				//  $("#edit-caption").val(example_caption);
+				$("#edit-caption").val(example_name);
 				$(".example-code-edit").show();
 				$(".well").show();
 				$(".update-button").show();
@@ -158,33 +175,120 @@
 				}
 			});
 		});
+		//edit caption form submit
 		$caption_form.submit(function(e) {
 			var example_id = $example.val();
-			if (example_id != "0") {
-				var caption = $caption.val();
-				caption = caption.trim();
-				if (caption == '') {
-					alert('Please enter new caption ');
-					return false;
-				}
-				$updating.show();
-				$.ajax({
-					url: modPath + "ajax/update/",
-					type: "POST",
-					data: {
-						example_id: example_id,
-						caption: caption
-					},
-					dataType: "html",
-					success: function(data) {
-						$chapter.trigger("change");
-						$updating.hide();
-						$done.show();
-						$done.fadeOut("slow");
+			var chapter_id = $('option:selected', $chapter).attr("data-chapterid");
+			if ($('.chapter-caption-chk').prop('checked') == true && $(
+					'.example-caption-chk').prop('checked') == true) {
+				if (example_id != "0" && chapter_id != "0") {
+					var caption = $caption.val();
+					caption = caption.trim();
+					caption = caption.replace(/\s\s+/g, ' ');
+					if(validateCaption(caption) == true) {
+						alert('Enter valid text for example caption');
+						return false;
 					}
-				});
+					var chapter_caption = $("#edit-chapter-name").val();
+					chapter_caption = chapter_caption.trim();
+					chapter_caption = caption.replace(/\s\s+/g, ' ');
+					if(validateCaption(chapter_caption) == true) {
+						alert('Enter valid text for chapter caption');
+						return false;
+					}
+					if (caption == '' || chapter_caption =='') {
+						alert('Please enter new caption ');
+						return false;
+					}
+					$updating.show();
+					$.ajax({
+						url: modPath + "ajax/update-both/",
+						type: "POST",
+						data: {
+							example_id: example_id,
+							caption: caption,
+							chapter_id: chapter_id,
+							chapter_caption: chapter_caption
+						},
+						dataType: "html",
+						success: function(data) {
+							$chapter.trigger("change");
+							$book.trigger("change");
+							$updating.hide();
+							$done.show();
+							$done.fadeOut("slow");
+						}
+					});
+				} else {
+					alert("No entry is selected.")
+				}
+			} else if ($('.example-caption-chk').prop('checked') == true) {
+				if (example_id != "0") {
+					var caption = $caption.val();
+					caption = caption.trim();
+					caption = caption.replace(/\s\s+/g, ' ');
+					if(validateCaption(caption) == true) {
+						alert('Enter valid text');
+						return false;
+					}
+					if (caption == '') {
+						alert('Please enter new caption ');
+						return false;
+					}
+					$updating.show();
+					$.ajax({
+						url: modPath + "ajax/update-example/",
+						type: "POST",
+						data: {
+							example_id: example_id,
+							caption: caption
+						},
+						dataType: "html",
+						success: function(data) {
+							$chapter.trigger("change");
+							$updating.hide();
+							$done.show();
+							$done.fadeOut("slow");
+						}
+					});
+				} else {
+					alert("No example selected.")
+				}
+			} else if ($('.chapter-caption-chk').prop('checked') == true) {
+					if (chapter_id != "0") {
+					var chapter_caption = $("#edit-chapter-name").val();
+					chapter_caption = chapter_caption.trim();
+					chapter_caption = caption.replace(/\s\s+/g, ' ');
+					if(validateCaption(chapter_caption) == true) {
+						alert('Enter valid text for chapter caption');
+						return false;
+					}
+					if (chapter_caption == '') {
+						alert('Please enter new caption ');
+						return false;
+					}
+					$updating.show();
+					$.ajax({
+						url: modPath + "ajax/update-chapter/",
+						type: "POST",
+						data: {
+							chapter_id: chapter_id,
+							chapter_caption: chapter_caption
+						},
+						dataType: "html",
+						success: function(data) {
+							$chapter.trigger("change");
+							$book.trigger("change");
+							$updating.hide();
+							$done.show();
+							$done.fadeOut("slow");
+						}
+					});
+				} else {
+					alert("No example selected.")
+				}
 			} else {
-				alert("No example selected.")
+				alert("Please select the checkbox option")
 			}
 			e.preventDefault();
 		});
@@ -229,6 +333,10 @@
 				}
 			});
 		});
+		function validateCaption(text){
+			var re = /([a-zA-Z|*|_|.|+|-|\\|?|/|!|~|!|@|#|$|%|^|&|(|)|<|>|{|}|;|:|\"|\'|,])\1{2,}/;
+			return re.test(text);
+		}
 		/* toggle in edition */
 		$ind_ed = $(".ind-ed");
 		$ind_ed.click(function(e) {

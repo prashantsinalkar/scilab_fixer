@@ -14,6 +14,8 @@ function getSelectionText(divID) {
 	}
 	return selectedText;
 }
+
+
 (function($) {
 	$(document).ready(function() {
 		$(".fix-caption-code").mousedown(function() {
@@ -21,6 +23,13 @@ function getSelectionText(divID) {
 		});
 		$(".fix-caption-code").mouseup(function() {
 			quotedText = getSelectionText("#fix-caption-code");
+			$("#edit-caption").val(quotedText);
+		});
+		$("#edit-example").mousedown(function() {
+			$("#edit-caption").val("");
+		});
+		$("#edit-example").mouseup(function() {
+			quotedText =  $('option:selected', this).attr("data-exampleid");
 			$("#edit-caption").val(quotedText);
 		});
 	});
