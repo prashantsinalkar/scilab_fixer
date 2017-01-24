@@ -184,8 +184,18 @@
 				if (example_id != "0" && chapter_id != "0") {
 					var caption = $caption.val();
 					caption = caption.trim();
+					caption = caption.replace(/\s\s+/g, ' ');
+					if(validateCaption(caption) == true) {
+						alert('Enter valid text for example caption');
+						return false;
+					}
 					var chapter_caption = $("#edit-chapter-name").val();
-					chapter_caption =  chapter_caption.trim();
+					chapter_caption = chapter_caption.trim();
+					chapter_caption = caption.replace(/\s\s+/g, ' ');
+					if(validateCaption(chapter_caption) == true) {
+						alert('Enter valid text for chapter caption');
+						return false;
+					}
 					if (caption == '' || chapter_caption =='') {
 						alert('Please enter new caption ');
 						return false;
@@ -216,6 +226,11 @@
 				if (example_id != "0") {
 					var caption = $caption.val();
 					caption = caption.trim();
+					caption = caption.replace(/\s\s+/g, ' ');
+					if(validateCaption(caption) == true) {
+						alert('Enter valid text');
+						return false;
+					}
 					if (caption == '') {
 						alert('Please enter new caption ');
 						return false;
@@ -242,7 +257,12 @@
 			} else if ($('.chapter-caption-chk').prop('checked') == true) {
 					if (chapter_id != "0") {
 					var chapter_caption = $("#edit-chapter-name").val();
-					chapter_caption =  chapter_caption.trim();
+					chapter_caption = chapter_caption.trim();
+					chapter_caption = caption.replace(/\s\s+/g, ' ');
+					if(validateCaption(chapter_caption) == true) {
+						alert('Enter valid text for chapter caption');
+						return false;
+					}
 					if (chapter_caption == '') {
 						alert('Please enter new caption ');
 						return false;
@@ -313,6 +333,10 @@
 				}
 			});
 		});
+		function validateCaption(text){
+			var re = /([a-zA-Z|*|_|.|+|-|\\|?|/|!|~|!|@|#|$|%|^|&|(|)|<|>|{|}|;|:|\"|\'|,])\1{2,}/;
+			return re.test(text);
+		}
 		/* toggle in edition */
 		$ind_ed = $(".ind-ed");
 		$ind_ed.click(function(e) {
