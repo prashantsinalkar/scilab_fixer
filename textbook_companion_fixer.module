@@ -78,6 +78,29 @@ function textbook_companion_fixer_menu()
 		'type' => MENU_NORMAL_ITEM,
 		'file' => 'textbook_companion_fixer_settings.inc'
 	);
+	// edit book categoery
+	$items["textbook_companion_fixer/edit_book_category"] = array(
+		"title" => "Edit Completed Books Category",
+		"page callback" => "textbook_companion_fixer_edit_book_proposal_all",
+		"access arguments" => array(
+			"fix scilab_textbook_category"
+		),
+		"type" => MENU_NORMAL_ITEM,
+		'file' => 'textbook_companion_fixer_edit_book_category.inc'
+	);
+	$items['textbook_companion_fixer/category_edit'] = array(
+		'title' => 'Categorize',
+		'description' => 'Edit Completed Books Category',
+		'page callback' => 'drupal_get_form',
+		'page arguments' => array(
+			'textbook_companion_fixer_category_edit_form'
+		),
+		'access arguments' => array(
+			'fix scilab_textbook_category'
+		),
+		'type' => MENU_NORMAL_ITEM,
+		'file' => 'textbook_companion_fixer_edit_book_category.inc'
+	);
 	return $items;
 }
 function textbook_companion_fixer_permission()
@@ -93,6 +116,10 @@ function textbook_companion_fixer_permission()
 		),
 		"administer textbook companion fixer settings" => array(
 			"title" => t("administer textbook companion fixer settings"),
+			'restrict access' => TRUE
+		),
+		"fix scilab_textbook_category" => array(
+			"title" => t("fix scilab textbook category"),
 			'restrict access' => TRUE
 		)
 	);
@@ -750,6 +777,73 @@ function _tbc_fixer_list_of_category($category_id = NULL)
 		$category[$category_list_data->category_id] = $category_list_data->category_name;
 	} //$category_list_data = $category_list->fetchObject()
 	return $category;
+}
+function _textbook_companion_fixer_list_of_category($category_id = NULL)
+{
+	if ($category_id == NULL )
+	{
+		$query = db_select('list_of_category');
+		$query->fields('list_of_category');
+		$query->orderBy('id', 'ASC');
+		$category_list = $query->execute();
+	} //$category_id == NULL
+	else
+	{
+		$query = db_select('list_of_category');
+		$query->fields('list_of_category');
+		$query->condition('category_id', $category_id);
+		$query->orderBy('id', 'ASC');
+		$category_list = $query->execute();
+	}
+	while ($category_list_data = $category_list->fetchObject())
+	{
+		$category = $category_list_data->category_name;
+	} //$category_list_data = $category_list->fetchObject()
+	return $category;
+}
+function _textbook_companion_fixer_list_of_category_checkboxes()
+
+
+{
+		$query = db_select('list_of_category');
+		$query->fields('list_of_category');
+		//$query->fields(array('category_id','main_category'));
+		$query->orderBy('category_id', 'ASC');
+		$category_list = $query->execute();
+		
+   
+	while ($category_list_data = $category_list->fetchObject())
+	{
+		$categoryname=$category_list_data->main_category;
+		if($categoryname!=null||strlen($categoryname)!=0){
+		$category[$category_list_data->category_id] = $category_list_data->main_category;
+	} //$category_list_data = $category_list->fetchObject()
+}
+	return $category;
+}
+function _textbook_companion_fixer_list_of_subcategory($category_id)
+{ 
+	
+	if ($category_id == NULL)
+	{
+		$query = db_select('list_of_subcategory');
+		$query->fields('list_of_subcategory');
+		$query->orderBy('id', 'ASC');
+		$subcategory_list = $query->execute();
+	} //$category_id == NULL
+	else
+	{
+		$query = db_select('list_of_subcategory');
+		$query->fields('list_of_subcategory');
+		$query->condition('main_category', $category_id);
+		$query->orderBy('id', 'ASC');
+		$subcategory_list = $query->execute();
+	}
+	while ($subcategory_list_data = $subcategory_list->fetchObject())
+	{
+		$category[$subcategory_list_data->id] = $subcategory_list_data->subcategory;
+	} //$category_list_data = $category_list->fetchObject()
+	return $subcategory;
 }
 function textbook_companion_fixer_init()
 {
