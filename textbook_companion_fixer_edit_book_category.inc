@@ -1,9 +1,4 @@
 <?php
-/*
-function textbook_companion_fixer_edit_book_category(){
-
-}
-*/
 function textbook_companion_fixer_edit_book_proposal_all()
 {
 	//get the book count
@@ -104,51 +99,18 @@ function textbook_companion_fixer_category_edit_form($form, &$form_state)
 		'#title' => t('Year of pulication'),
 		'#markup' => $preference_data->year
 	);
-
-
 		$form["wrapper"]['main_category']= array(
-			"#markup" => _textbook_companion_fixer_list_of_category_checkboxes(),					
-		);
-
-		$form["wrapper"]['main_subcategory_'. $category_list_data->category_id] = array(
-			"#type" => "select",
-			"#title" => t("Please select the subcategory."),
-			"#options" => array(
-				0 => "Please select a subcategory ".$category_list_data->category_id
-			),
-			"#prefix" => "<div class='select-subcategory-".$category_list_data->category_id."'>",
-			"#suffix" => "</div>"
+			"#markup" => _textbook_companion_fixer_list_of_category_checkboxes(),
 		);
 	$form["wrapper"]['submit'] = array(
 		'#type' => 'submit',
-		'#value' => t('Submit')
+		'#value' => t('Submit'),
+		'#attributes' => array('id' => 'submit-button-category'),
+		"#prefix" => "<div class='update-button-category'>",
+		"#suffix" => "</div>"
 	);
 	$form["wrapper"]['cancel'] = array(
-		'#type' => 'markup',
-		'#value' => l(t('Cancel'), 'textbook_companion_fixer/edit_book_category')
+		'#markup' => l(t('Cancel'), 'textbook_companion_fixer/edit_book_category')
 	);
 	return $form;
 }
-
-/********************* Ajax callback ***************************/
-function ajax_subcategory_list_callback_1($form, $form_state)
-{
-	$category_default_value = 1;
-	if ($category_default_value > 0)
-	{
-		$form['main_subcategory_1']['#options'] = _textbook_companion_fixer_list_of_subcategory($category_default_value);
-		$commands[] = ajax_command_replace("#ajax-subcategory-list-replace-1", drupal_render($form['main_subcategory_1']));	
-
-	} //$category_default_value > 0
-	else
-	{
-		$form['main_subcategory_1']['#options'] = _textbook_companion_fixer_list_of_subcategory();
-		$commands[] = ajax_command_replace("#ajax-subcategory-list-replace-1", drupal_render($form['main_subcategory_1']));
-		
-	}
-	return array(
-		'#type' => 'ajax',
-		'#commands' => $commands
-	);
-}
-/*************************************************************************/

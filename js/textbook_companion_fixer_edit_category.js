@@ -1,15 +1,9 @@
 (function($) {
 	$(document).ready(function() {
 		var basePath = Drupal.settings.basePath;
+		//var modPath = basePath + "textbook_companion_fixer/";
 		var modPath = basePath + "textbook_companion_fixer/ajax/edit-book-category/";
 		$category_form = $("#fix-tbc-category-form");
-		$main_category1 = $(".main-category-1");
-		$main_category2 = $(".main-category-2");
-		$main_category3 = $(".main-category-3");
-		$main_category4 = $(".main-category-4");
-		$main_category5 = $(".main-category-5");
-		$main_category6 = $(".main-category-6");
-		$main_category7 = $(".main-category-7");
 		$(".main-subcategory-1").hide();
 		$(".main-subcategory-2").hide();
 		$(".main-subcategory-3").hide();
@@ -18,7 +12,6 @@
 		$(".main-subcategory-6").hide();
 		$(".main-subcategory-7").hide();
 		prop = $('.main-category-chk-1').prop('checked');
-		console.log(prop);
 		$('.main-category-chk-1').change(function() {
 			if (!this.checked) {
 				$('.main-subcategory-1').hide();
@@ -76,7 +69,29 @@
 			}
 		});
 		//edit category form submit
-		$category_form.submit(function(e) {
+		$("#submit-button-category").click(function(e) {
+			var main_cat_chk_value = [];
+			$("input[name='ids[]']:checked").each(function (){
+				main_cat_chk_value.push(parseInt($(this).val()));
+			});
+				console.log(modPath);
+				$.ajax({
+					url: modPath,
+					type: "POST",
+					data: {
+						pref_id: pref_id,
+						main_category: main_cat_chk_value,
+						subcategory: ""
+					},
+					dataType: "html",
+					success: function(data) {
+						$updating.hide();
+						$done.show();
+						console.log("data: +" + main_cat_chk_value);
+						$done.fadeOut("slow");
+						//alert("ok");
+					}
+				});
 			e.preventDefault();
 		});
 

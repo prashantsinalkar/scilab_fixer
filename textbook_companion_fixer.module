@@ -808,8 +808,24 @@ function _textbook_companion_fixer_list_of_category($category_id = NULL)
 }
 
 function textbook_companion_fixer_edit_book_category_ajax($item,$key){
-	if ($item == "edit_book_category") {
+	$data = "";
+	$item = arg(2);
+
+	if ($item == "edit-book-category") {
 		$data .= "Updated";
+		foreach($_POST['main_category'] as $main_category && $_POST['sub_category'] as $sub_category) {
+		$query = "
+                INSERT INTO textbook_companion_book_main_subcategories
+                (pref_id, main_category, sub_category)
+                VALUES
+                (:pref_id, :main_category, :subcategory)
+                ";
+		$args = array(
+			':pref_id' => $_POST['pref_id'],
+			':main_category' =>$main_category,
+			':subcategory' => $sub_category,
+		);
+		$result = db_query($query, $args);
 		/* sending email */
 		$email_to = $user->mail;
 		$from = variable_get('textbook_companion_from_email', '');
@@ -829,7 +845,12 @@ function textbook_companion_fixer_edit_book_category_ajax($item,$key){
 		if (!drupal_mail('textbook_companion_fixer', 'category_updated', $email_to, language_default(), $params, $from, TRUE)) {
 			$data .= 'Error sending email message.';
 		} //!drupal_mail('textbook_companion_fixer', 'example_updated', $email_to, language_default(), $params, $from, TRUE)
+		}
+		
 	}
+	$data .= $main_cat;
+	echo $data;
+	exit();
 }
 function _textbook_companion_fixer_list_of_category_checkboxes()
 {
