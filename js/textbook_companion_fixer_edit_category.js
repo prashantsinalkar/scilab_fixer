@@ -74,20 +74,28 @@
 			$("input[name='ids[]']:checked").each(function (){
 				main_cat_chk_value.push(parseInt($(this).val()));
 			});
-				console.log(modPath);
+			var sub_cat_select_value = $.map($('select[name="subcats"] :selected'), function (val, _) {
+				var newObj = {};
+				if(val.value > '0'){
+					newObj.subcats = val.value;
+				}
+				return newObj;
+			});
+			var pref_id = $('.prefrence_id').val();
+				console.log(pref_id);
 				$.ajax({
 					url: modPath,
 					type: "POST",
 					data: {
 						pref_id: pref_id,
 						main_category: main_cat_chk_value,
-						subcategory: ""
+						sub_category: sub_cat_select_value
 					},
 					dataType: "html",
 					success: function(data) {
 						$updating.hide();
 						$done.show();
-						console.log("data: +" + main_cat_chk_value);
+						console.log("data1: " + main_cat_chk_value + " data2: "+ sub_cat_select_value);
 						$done.fadeOut("slow");
 						//alert("ok");
 					}

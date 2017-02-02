@@ -99,6 +99,9 @@ function textbook_companion_fixer_category_edit_form($form, &$form_state)
 		'#title' => t('Year of pulication'),
 		'#markup' => $preference_data->year
 	);
+	$form["wrapper"]['pref_id'] = array(
+		'#markup' => '<input class="prefrence_id" type="hidden" name="pref_id" value="'.$preference_data->id.'">'
+	);
 		$form["wrapper"]['main_category']= array(
 			"#markup" => _textbook_companion_fixer_list_of_category_checkboxes(),
 		);
