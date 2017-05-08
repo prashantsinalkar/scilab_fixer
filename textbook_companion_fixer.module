@@ -264,6 +264,8 @@ function scilab_fixer_ajax($item, $key)
 		$query->fields('fil');
 		$query->leftJoin('textbook_companion_example', 'exa', 'exa.id = fil.example_id');
 		$query->condition('example_id', $key);
+		$query->condition('filetype', 'S');
+		$query->orderBy('number', 'ASC');
 		$result = $query->execute();
 		$row = $result->fetchObject();
 		/* fetching example file data */
@@ -594,7 +596,7 @@ function scilab_fixer_aicte_edit_all($aicte_id = 0)
 				"{$row->book}",
 				"{$row->author}",
 				"{$row->edition}",
-				l(t("Edit"), "fix/aicte/edit/{$row->id}")
+				l(t("Edit"), "textbook_companion_fixer/aicte/edit/{$row->id}")
 			);
 			if ($row->selected) {
 				$check = "<input class='selected' type='checkbox' data-bid='{$row->id}' checked>";
