@@ -67,7 +67,8 @@ function textbook_companion_fixer_menu()
 	$items["textbook_companion_fixer/ajax/edit-book-category"] = array(
 		"page callback" => "textbook_companion_fixer_edit_book_category_ajax",
 		"access callback" => TRUE,
-		"type" => MENU_CALLBACK
+		"type" => MENU_CALLBACK,
+		"file" => "textbook_companion_fixer_edit_book_category.inc"
 	);
 	/* for admin */
 	$items['admin/settings/textbook_companion_fixer_settings'] = array(
@@ -762,131 +763,7 @@ function scilab_fixer_code_all()
 	$page_content .= "</div>";
 	return $page_content;
 }
-function _tbc_fixer_list_of_category($category_id = NULL)
-{
-	$category[0] = "Please select";
-	if ($category_id == NULL) {
-		$query = db_select('list_of_category');
-		$query->fields('list_of_category');
-		$query->orderBy('id', 'ASC');
-		$category_list = $query->execute();
-	} //$category_id == NULL
-	else {
-		$query = db_select('list_of_category');
-		$query->fields('list_of_category');
-		$query->condition('category_id', $category_id);
-		$query->orderBy('id', 'ASC');
-		$category_list = $query->execute();
-	}
-	while ($category_list_data = $category_list->fetchObject()) {
-		$category[$category_list_data->category_id] = $category_list_data->category_name;
-	} //$category_list_data = $category_list->fetchObject()
-	return $category;
-}
-function _textbook_companion_fixer_list_of_category($category_id = NULL)
-{
-	if ($category_id == NULL )
-	{
-		$query = db_select('list_of_category');
-		$query->fields('list_of_category');
-		$query->orderBy('id', 'ASC');
-		$category_list = $query->execute();
-	} //$category_id == NULL
-	else
-	{
-		$query = db_select('list_of_category');
-		$query->fields('list_of_category');
-		$query->condition('category_id', $category_id);
-		$query->orderBy('id', 'ASC');
-		$category_list = $query->execute();
-	}
-	while ($category_list_data = $category_list->fetchObject())
-	{
-		$category = $category_list_data->category_name;
-	} //$category_list_data = $category_list->fetchObject()
-	return $category;
-}
 
-function textbook_companion_fixer_edit_book_category_ajax($item,$key){
-	$data = "";
-	$item = arg(2);
-
-	if ($item == "edit-book-category") {
-		$data .= "Updated";
-		foreach($_POST['main_category'] as $main_category && $_POST['sub_category'] as $sub_category) {
-		$query = "
-                INSERT INTO textbook_companion_book_main_subcategories
-                (pref_id, main_category, sub_category)
-                VALUES
-                (:pref_id, :main_category, :subcategory)
-                ";
-		$args = array(
-			':pref_id' => $_POST['pref_id'],
-			':main_category' =>$main_category,
-			':subcategory' => $sub_category,
-		);
-		$result = db_query($query, $args);
-		/* sending email */
-		$email_to = $user->mail;
-		$from = variable_get('textbook_companion_from_email', '');
-		$bcc = variable_get('textbook_companion_fixer_bcc_emails', '');
-		$cc = variable_get('textbook_companion_fixer_cc_emails', '');
-		$params['category_updated']['pref_id'] = $pref_id;
-		$params['category_updated']['user_id'] = $user->uid;
-		$params['category_updated']['headers'] = array(
-			'From' => $from,
-			'MIME-Version' => '1.0',
-			'Content-Type' => 'text/plain; charset=UTF-8; format=flowed; delsp=yes',
-			'Content-Transfer-Encoding' => '8Bit',
-			'X-Mailer' => 'Drupal',
-			'Cc' => $cc,
-			'Bcc' => $bcc
-		);
-		if (!drupal_mail('textbook_companion_fixer', 'category_updated', $email_to, language_default(), $params, $from, TRUE)) {
-			$data .= 'Error sending email message.';
-		} //!drupal_mail('textbook_companion_fixer', 'example_updated', $email_to, language_default(), $params, $from, TRUE)
-		}
-		
-	}
-	$data .= $main_cat;
-	echo $data;
-	exit();
-}
-function _textbook_companion_fixer_list_of_category_checkboxes()
-{
-		$query = db_select('list_of_category');
-		$query->fields('list_of_category');
-		//$query->fields(array('category_id','main_category'));
-		$query->orderBy('category_id', 'ASC');
-		$category_list = $query->execute();
-		
-   
-	while ($category_list_data = $category_list->fetchObject())
-	{
-		$categoryname=$category_list_data->main_category;
-		if($categoryname!=null||strlen($categoryname)!=0){
-		//$category[$category_list_data->category_id] = $category_list_data->main_category;
-
-		$category .= "<input type='checkbox' name='ids[]' value='".$category_list_data->category_id."' class='main-category-chk-".$category_list_data->category_id."' >".$category_list_data->main_category."<br>
-		<select class='main-subcategory-".$category_list_data->category_id."'>"._textbook_companion_fixer_list_of_subcategory($category_list_data->category_id)."</select><br><br><hr>";
-	} //$category_list_data = $category_list->fetchObject()
-}
-	return $category;
-}
-function _textbook_companion_fixer_list_of_subcategory($category_id)
-{ 
-		$query = db_select('list_of_subcategory');
-		$query->fields('list_of_subcategory');
-	$query->condition('main_category', $category_id);
-	$query->orderBy('id', 'ASC');
-	$subcategory_list = $query->execute();
-	$subcategory .= "<option value='0'> Please select a subcategory </option>";
-	while ($subcategory_list_data = $subcategory_list->fetchObject())
-	{
-		$subcategory .= "<option value='".$subcategory_list_data->id."' data-name='".$subcategory_list_data->subcategory."'>".$subcategory_list_data->subcategory."</option>";
-	} //$category_list_data = $category_list->fetchObject()
-	return $subcategory;
-}
 function textbook_companion_fixer_init()
 {
 	drupal_add_css(drupal_get_path("module", "textbook_companion_fixer") . "/css/textbook_companion_fixer.css");
