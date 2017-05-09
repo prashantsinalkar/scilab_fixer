@@ -9,7 +9,7 @@ function textbook_companion_fixer_edit_book_proposal_all()
 	/* get preference */
 	$preference_q = db_query("SELECT pe.id as pref_id, pe.book as book, pe.author as author,pe.category as existing_category, pe.publisher as publisher, pe.year as year, pe.id as pe_id, po.approval_date as approval_date
   FROM {textbook_companion_preference} pe LEFT JOIN {textbook_companion_proposal} po ON pe.proposal_id = po.id
-  WHERE po.proposal_status = 3 AND pe.approval_status = 1 ORDER BY pe.book ASC");
+  WHERE po.proposal_status = 3 AND pe.approval_status = 1 AND pe.category>0 ORDER BY pe.book ASC");
 	while ($preference_data = $preference_q->fetchObject())
 	{
 		$proposal_rows[] = array(
