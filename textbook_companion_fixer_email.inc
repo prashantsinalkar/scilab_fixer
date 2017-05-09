@@ -199,7 +199,7 @@ FOSSEE, IIT Bombay', array(
 			);
 			break;
 			case 'new_subcategory_deleted':
-			query = db_select('textbook_companion_preference');
+			$query = db_select('textbook_companion_preference');
 			$query->fields('textbook_companion_preference');
 			$query->condition('id', $params['subcategory_deleted']['pref_id']);
 			$query->range(0, 1);
@@ -248,7 +248,7 @@ FOSSEE, IIT Bombay', array(
 			);
 			break;
 			case 'new_maincategory_deleted':
-			query = db_select('textbook_companion_preference');
+			$query = db_select('textbook_companion_preference');
 			$query->fields('textbook_companion_preference');
 			$query->condition('id', $params['maincategory_deleted']['pref_id']);
 			$query->range(0, 1);
