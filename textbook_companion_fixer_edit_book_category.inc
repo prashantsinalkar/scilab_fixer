@@ -108,14 +108,15 @@ function textbook_companion_fixer_category_edit_form($form, &$form_state)
 }
 function textbook_companion_fixer_edit_book_category_ajax($item, $key)
 {
+	global $user;
 	$data = "";
 	$item = arg(2);
+	$main_category = $_POST['main_category'];
+	$sub_category = $_POST['sub_category'];
 	if ($item == "edit-book-category")
 	{
 		if ($_POST['action'] == "add")
 		{
-			$main_category = $_POST['main_category'];
-			$sub_category = $_POST['sub_category'];
 			$query_in1 = "
                 INSERT INTO {textbook_companion_book_main_subcategories}
                 (pref_id, main_category, sub_category)
@@ -128,6 +129,27 @@ function textbook_companion_fixer_edit_book_category_ajax($item, $key)
 				':subcategory' => $sub_category
 			);
 			$result_in1 = db_query($query_in1, $args_in1);
+			/* sending email */
+		$email_to = $user->mail;
+		$from = variable_get('textbook_companion_from_email', '');
+		$bcc = variable_get('textbook_companion_fixer_bcc_emails', '');
+		$cc = variable_get('textbook_companion_fixer_cc_emails', '');
+		$params['category_updated']['pref_id'] = $_POST['pref_id'];
+		$params['category_updated']['main_category'] = $main_category;
+		$params['category_updated']['sub_category'] = $sub_category;
+		$params['category_updated']['user_id'] = $user->uid;
+		$params['category_updated']['headers'] = array(
+			'From' => $from,
+			'MIME-Version' => '1.0',
+			'Content-Type' => 'text/plain; charset=UTF-8; format=flowed; delsp=yes',
+			'Content-Transfer-Encoding' => '8Bit',
+			'X-Mailer' => 'Drupal',
+			'Cc' => $cc,
+			'Bcc' => $bcc
+		);
+		if (!drupal_mail('textbook_companion_fixer', 'new_category_updated', $email_to, language_default(), $params, $from, TRUE)) {
+			$data .= 'Error sending email message.';
+		}
 		} //$_POST['action'] == "add"
 		elseif ($_POST['action'] == "delete")
 		{
@@ -140,6 +162,27 @@ WHERE pref_id= :pref_id AND main_category= :main_category AND sub_category = :su
 				':subcategory' => $_POST['sub_category']
 			);
 			$result_del1 = db_query($query_del1, $args_del1);
+			/* sending email */
+		$email_to = $user->mail;
+		$from = variable_get('textbook_companion_from_email', '');
+		$bcc = variable_get('textbook_companion_fixer_bcc_emails', '');
+		$cc = variable_get('textbook_companion_fixer_cc_emails', '');
+		$params['subcategory_deleted']['pref_id'] = $_POST['pref_id'];
+		$params['subcategory_deleted']['main_category'] = $main_category;
+		$params['subcategory_deleted']['sub_category'] = $sub_category;
+		$params['subcategory_deleted']['user_id'] = $user->uid;
+		$params['subcategory_deleted']['headers'] = array(
+			'From' => $from,
+			'MIME-Version' => '1.0',
+			'Content-Type' => 'text/plain; charset=UTF-8; format=flowed; delsp=yes',
+			'Content-Transfer-Encoding' => '8Bit',
+			'X-Mailer' => 'Drupal',
+			'Cc' => $cc,
+			'Bcc' => $bcc
+		);
+		if (!drupal_mail('textbook_companion_fixer', 'new_subcategory_deleted', $email_to, language_default(), $params, $from, TRUE)) {
+			$data .= 'Error sending email message.';
+		}
 		} //$_POST['action'] == "delete"
 		elseif ($_POST['action'] == "delete-main-with-ub-category")
 		{
@@ -151,6 +194,26 @@ WHERE pref_id= :pref_id AND main_category= :main_category
 				':main_category' => $_POST['main_category']
 			);
 			$result_del2 = db_query($query_del2, $args_del2);
+					/* sending email */
+		$email_to = $user->mail;
+		$from = variable_get('textbook_companion_from_email', '');
+		$bcc = variable_get('textbook_companion_fixer_bcc_emails', '');
+		$cc = variable_get('textbook_companion_fixer_cc_emails', '');
+		$params['maincategory_deleted']['pref_id'] = $_POST['pref_id'];
+		$params['maincategory_deleted']['main_category'] = $main_category;
+		$params['maincategory_deleted']['user_id'] = $user->uid;
+		$params['maincategory_deleted']['headers'] = array(
+			'From' => $from,
+			'MIME-Version' => '1.0',
+			'Content-Type' => 'text/plain; charset=UTF-8; format=flowed; delsp=yes',
+			'Content-Transfer-Encoding' => '8Bit',
+			'X-Mailer' => 'Drupal',
+			'Cc' => $cc,
+			'Bcc' => $bcc
+		);
+		if (!drupal_mail('textbook_companion_fixer', 'new_maincategory_deleted', $email_to, language_default(), $params, $from, TRUE)) {
+			$data .= 'Error sending email message.';
+		}
 		} //$_POST['action'] == "delete-main-with-ub-category"
 		else
 		{

@@ -61,7 +61,6 @@ FOSSEE, IIT Bombay', array(
 			);
 			break;
 		case 'chapter_updated':
-			
 			$query = db_select('textbook_companion_chapter');
 			$query->fields('textbook_companion_chapter');
 			$query->condition('id', $params['chapter_updated']['chapter_id']);;
@@ -138,6 +137,146 @@ Title of the chapter : ' . $chapter_data->name . '
 Example number : ' . $example_data->number . '
 Caption : ' . $example_data->caption . '
 
+
+Best Wishes,
+
+Scilab TBC Team,
+FOSSEE, IIT Bombay', array(
+					'!site_name' => variable_get('site_name', ''),
+					'!user_name' => $user_data->name
+				), array(
+					'language' => $language->language
+				))
+			);
+			break;
+			case 'new_category_updated':
+			$query = db_select('textbook_companion_preference');
+			$query->fields('textbook_companion_preference');
+			$query->condition('id', $params['category_updated']['pref_id']);
+			$query->range(0, 1);
+			$result = $query->execute();
+			$preference_data = $result->fetchObject();
+			$query_mcat = db_select('list_of_category');
+			$query_mcat->fields('list_of_category');
+			$query_mcat->condition('category_id', $params['category_updated']['main_category']);
+			$query_mcat->range(0, 1);
+			$result_mcat = $query_mcat->execute();
+			$main_category_data = $result_mcat->fetchObject();
+			$query_subcat = db_select('list_of_subcategory');
+			$query_subcat->fields('list_of_subcategory');
+			$query_subcat->condition('subcategory_id', $params['category_updated']['sub_category']);
+			$query_subcat->range(0, 1);
+			$result_subcat = $query_subcat->execute();
+			$sub_category_data = $result_subcat->fetchObject();
+			$user_data = user_load($params['category_updated']['user_id']);
+			$message['headers'] = $params['category_updated']['headers'];
+			$message['subject'] = t('[!site_name][Textbook companion][category] You have updated category for textbook ' . $preference_data->book, array(
+				'!site_name' => variable_get('site_name', '')
+			), array(
+				'language' => $language->language
+			));
+			$message['body'] = array(
+				'body' => t('
+Dear !user_name,
+
+You have updated the category for following book :
+
+Title of the book : ' . $preference_data->book . '
+Author : ' . $preference_data->author. '
+
+Main category : '. $main_category_data->maincategory .'
+Sub category : '. $sub_category_data->subcategory .'
+
+Best Wishes,
+
+Scilab TBC Team,
+FOSSEE, IIT Bombay', array(
+					'!site_name' => variable_get('site_name', ''),
+					'!user_name' => $user_data->name
+				), array(
+					'language' => $language->language
+				))
+			);
+			break;
+			case 'new_subcategory_deleted':
+			query = db_select('textbook_companion_preference');
+			$query->fields('textbook_companion_preference');
+			$query->condition('id', $params['subcategory_deleted']['pref_id']);
+			$query->range(0, 1);
+			$result = $query->execute();
+			$preference_data = $result->fetchObject();
+			$query_mcat = db_select('list_of_category');
+			$query_mcat->fields('list_of_category');
+			$query_mcat->condition('category_id', $params['subcategory_deleted']['main_category']);
+			$query_mcat->range(0, 1);
+			$result_mcat = $query_mcat->execute();
+			$main_category_data = $result_mcat->fetchObject();
+			$query_subcat = db_select('list_of_subcategory');
+			$query_subcat->fields('list_of_subcategory');
+			$query_subcat->condition('subcategory_id', $params['subcategory_deleted']['sub_category']);
+			$query_subcat->range(0, 1);
+			$result_subcat = $query_subcat->execute();
+			$sub_category_data = $result_subcat->fetchObject();
+			$user_data = user_load($params['subcategory_deleted']['user_id']);
+			$message['headers'] = $params['subcategory_deleted']['headers'];
+			$message['subject'] = t('[!site_name][Textbook companion][category] You have deleted subcategory for textbook ' . $preference_data->book, array(
+				'!site_name' => variable_get('site_name', '')
+			), array(
+				'language' => $language->language
+			));
+			$message['body'] = array(
+				'body' => t('
+Dear !user_name,
+
+You have deleted the subcategory for following book :
+
+Title of the book : ' . $preference_data->book . '
+Author : ' . $preference_data->author. '
+
+Main category : '. $main_category_data->maincategory .'
+Sub category : '. $sub_category_data->subcategory .'
+
+Best Wishes,
+
+Scilab TBC Team,
+FOSSEE, IIT Bombay', array(
+					'!site_name' => variable_get('site_name', ''),
+					'!user_name' => $user_data->name
+				), array(
+					'language' => $language->language
+				))
+			);
+			break;
+			case 'new_maincategory_deleted':
+			query = db_select('textbook_companion_preference');
+			$query->fields('textbook_companion_preference');
+			$query->condition('id', $params['maincategory_deleted']['pref_id']);
+			$query->range(0, 1);
+			$result = $query->execute();
+			$preference_data = $result->fetchObject();
+			$query_mcat = db_select('list_of_category');
+			$query_mcat->fields('list_of_category');
+			$query_mcat->condition('category_id', $params['maincategory_deleted']['main_category']);
+			$query_mcat->range(0, 1);
+			$result_mcat = $query_mcat->execute();
+			$main_category_data = $result_mcat->fetchObject();
+			$user_data = user_load($params['maincategory_deleted']['user_id']);
+			$message['headers'] = $params['maincategory_deleted']['headers'];
+			$message['subject'] = t('[!site_name][Textbook companion][category] You have deleted main category for textbook ' . $preference_data->book, array(
+				'!site_name' => variable_get('site_name', '')
+			), array(
+				'language' => $language->language
+			));
+			$message['body'] = array(
+				'body' => t('
+Dear !user_name,
+
+You have deleted the main category with subcategory for following book :
+
+Title of the book : ' . $preference_data->book . '
+Author : ' . $preference_data->author. '
+
+Main category : '. $main_category_data->maincategory .'
 
 Best Wishes,
 
