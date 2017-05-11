@@ -272,7 +272,7 @@ function _tbc_fixer_list_of_new_category($pref_id)
                 FROM list_of_category loc 
                 LEFT JOIN textbook_companion_book_main_subcategories tcbms ON loc.category_id = tcbms.main_category
                 LEFT JOIN  list_of_subcategory los ON los.subcategory_id = tcbms.sub_category
-                WHERE tcbms.pref_id = :pref_id
+                WHERE tcbms.pref_id = :pref_id ORDER BY loc.category_id
                 ";
 	$args = array(
 		':pref_id' => $pref_id
