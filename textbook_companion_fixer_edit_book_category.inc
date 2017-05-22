@@ -2,7 +2,7 @@
 function textbook_companion_fixer_edit_book_proposal_all()
 {
 	//get the book count
-	$result = db_query("SELECT COUNT( pe.book ) AS book_count FROM textbook_companion_preference pe LEFT JOIN textbook_companion_proposal po ON pe.proposal_id = po.id WHERE po.proposal_status =3 AND pe.approval_status =1 AND pe.category>0");
+	$result = db_query("SELECT COUNT( pe.book ) AS book_count FROM {textbook_companion_preference} pe LEFT JOIN {textbook_companion_proposal} po ON pe.proposal_id = po.id WHERE po.proposal_status =3 AND pe.approval_status =1 AND pe.category>0");
 	$row = $result->fetchObject();
 	$book_count = $row->book_count;
 	$i = 1;
@@ -153,7 +153,7 @@ function textbook_companion_fixer_edit_book_category_ajax($item, $key)
 		} //$_POST['action'] == "add"
 		elseif ($_POST['action'] == "delete")
 		{
-			$query_del1 = "DELETE FROM textbook_companion_book_main_subcategories
+			$query_del1 = "DELETE FROM {textbook_companion_book_main_subcategories}
 WHERE pref_id= :pref_id AND main_category= :main_category AND sub_category = :subcategory
                 ";
 			$args_del1 = array(
@@ -186,7 +186,7 @@ WHERE pref_id= :pref_id AND main_category= :main_category AND sub_category = :su
 		} //$_POST['action'] == "delete"
 		elseif ($_POST['action'] == "delete-main-with-ub-category")
 		{
-			$query_del2 = "DELETE FROM textbook_companion_book_main_subcategories
+			$query_del2 = "DELETE FROM {textbook_companion_book_main_subcategories}
 WHERE pref_id= :pref_id AND main_category= :main_category
                 ";
 			$args_del2 = array(
@@ -269,9 +269,9 @@ function _tbc_fixer_list_of_new_category($pref_id)
 	$category = "";
 	$main_category_query = "
                 SELECT  distinct(maincategory)
-                FROM list_of_category loc 
-                LEFT JOIN textbook_companion_book_main_subcategories tcbms ON loc.category_id = tcbms.main_category
-                LEFT JOIN  list_of_subcategory los ON los.subcategory_id = tcbms.sub_category
+                FROM {list_of_category} loc 
+                LEFT JOIN {textbook_companion_book_main_subcategories} tcbms ON loc.category_id = tcbms.main_category
+                LEFT JOIN  {list_of_subcategory} los ON los.subcategory_id = tcbms.sub_category
                 WHERE tcbms.pref_id = :pref_id ORDER BY loc.category_id
                 ";
 	$args = array(
@@ -284,9 +284,9 @@ function _tbc_fixer_list_of_new_category($pref_id)
 		$category .= "<li>$category_list_data->maincategory</li>";
 		$sub_category_query = "
                 SELECT DISTINCT (los.subcategory)
-                FROM list_of_category loc 
-                LEFT JOIN textbook_companion_book_main_subcategories tcbms ON loc.category_id = tcbms.main_category
-                LEFT JOIN  list_of_subcategory los ON los.subcategory_id = tcbms.sub_category
+                FROM {list_of_category} loc 
+                LEFT JOIN {textbook_companion_book_main_subcategories} tcbms ON loc.category_id = tcbms.main_category
+                LEFT JOIN  {list_of_subcategory} los ON los.subcategory_id = tcbms.sub_category
                 WHERE tcbms.pref_id = :pref_id and maincategory = :maincategoryvalue
                 ";
 		$sub_args = array(
@@ -307,10 +307,10 @@ function _tbc_fixer_list_of_ext_new_category($pref_id, $category_id)
 	$category = "";
 	$query = "
                 SELECT  maincategory, los.subcategory as subcategory 
-                FROM list_of_category loc 
-                LEFT JOIN textbook_companion_book_main_subcategories tcbms 
+                FROM {list_of_category} loc 
+                LEFT JOIN {textbook_companion_book_main_subcategories} tcbms 
                 ON loc.category_id = tcbms.main_category 
-                LEFT JOIN  list_of_subcategory los ON los.subcategory_id = tcbms.sub_category
+                LEFT JOIN  {list_of_subcategory} los ON los.subcategory_id = tcbms.sub_category
                 WHERE tcbms.pref_id = :pref_id AND loc.category_id = :category_id
                 ";
 	$args = array(
