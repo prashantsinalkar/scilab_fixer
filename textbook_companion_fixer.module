@@ -64,6 +64,12 @@ function textbook_companion_fixer_menu()
 		"access callback" => TRUE,
 		"type" => MENU_CALLBACK
 	);
+	$items["textbook_companion_fixer/ajax/edit-book-category"] = array(
+		"page callback" => "textbook_companion_fixer_edit_book_category_ajax",
+		"access callback" => TRUE,
+		"type" => MENU_CALLBACK,
+		"file" => "textbook_companion_fixer_edit_book_category.inc"
+	);
 	/* for admin */
 	$items['admin/settings/textbook_companion_fixer_settings'] = array(
 		'title' => 'textbook companion fixer Settings',
@@ -77,6 +83,29 @@ function textbook_companion_fixer_menu()
 		),
 		'type' => MENU_NORMAL_ITEM,
 		'file' => 'textbook_companion_fixer_settings.inc'
+	);
+	// edit book categoery
+	$items["textbook_companion_fixer/edit_book_category"] = array(
+		"title" => "Edit Completed Books Category",
+		"page callback" => "textbook_companion_fixer_edit_book_proposal_all",
+		"access arguments" => array(
+			"fix scilab_textbook_category"
+		),
+		"type" => MENU_NORMAL_ITEM,
+		'file' => 'textbook_companion_fixer_edit_book_category.inc'
+	);
+	$items['textbook_companion_fixer/category_edit'] = array(
+		'title' => 'Categorize',
+		'description' => 'Edit Completed Books Category',
+		'page callback' => 'drupal_get_form',
+		'page arguments' => array(
+			'textbook_companion_fixer_category_edit_form'
+		),
+		'access arguments' => array(
+			'fix scilab_textbook_category'
+		),
+		'type' => MENU_NORMAL_ITEM,
+		'file' => 'textbook_companion_fixer_edit_book_category.inc'
 	);
 	return $items;
 }
@@ -93,6 +122,10 @@ function textbook_companion_fixer_permission()
 		),
 		"administer textbook companion fixer settings" => array(
 			"title" => t("administer textbook companion fixer settings"),
+			'restrict access' => TRUE
+		),
+		"fix scilab_textbook_category" => array(
+			"title" => t("fix scilab textbook category"),
 			'restrict access' => TRUE
 		)
 	);
@@ -538,11 +571,11 @@ function scilab_fixer_aicte_form_submit($form, &$form_state)
 		));
 		$query->condition('id', $v["aicte_id"]);
 		$num_updated = $query->execute();
-		drupal_set_message("Book updated successfully", "status");
+		drupal_set_message(t('Book updated successfully'), 'status');
 	} //$v["aicte_id"]
 	else {
 		$query = "
-                INSERT INTO textbook_companion_aicte
+                INSERT INTO {textbook_companion_aicte}
                 (book, author, category, isbn, publisher, edition, year)
                 VALUES
                 (:book, :author, :category, :isbn, :publisher, :edition, :year)
@@ -557,7 +590,7 @@ function scilab_fixer_aicte_form_submit($form, &$form_state)
 			':year' => $v["year"]
 		);
 		$result = db_query($query, $args);
-		drupal_set_message("Book added successfully", "status");
+		drupal_set_message(t('Book added successfully'),'status');
 	}
 }
 function scilab_fixer_aicte_all()
@@ -721,6 +754,30 @@ function scilab_fixer_code_form($form, &$form_state)
 	);
 	return $form;
 }
+function _tbc_fixer_list_of_category($category_id = NULL)
+{
+	$category[0] = "Please select";
+	if ($category_id == NULL)
+	{
+		$query = db_select('list_of_category');
+		$query->fields('list_of_category');
+		$query->orderBy('id', 'ASC');
+		$category_list = $query->execute();
+	} //$category_id == NULL
+	else
+	{
+		$query = db_select('list_of_category');
+		$query->fields('list_of_category');
+		$query->condition('category_id', $category_id);
+		$query->orderBy('id', 'ASC');
+		$category_list = $query->execute();
+	}
+	while ($category_list_data = $category_list->fetchObject())
+	{
+		$category[$category_list_data->category_id] = $category_list_data->category_name;
+	} //$category_list_data = $category_list->fetchObject()
+	return $category;
+}
 function scilab_fixer_code_all()
 {
 	$page_content = "";
@@ -732,31 +789,12 @@ function scilab_fixer_code_all()
 	$page_content .= "</div>";
 	return $page_content;
 }
-function _tbc_fixer_list_of_category($category_id = NULL)
-{
-	$category[0] = "Please select";
-	if ($category_id == NULL) {
-		$query = db_select('list_of_category');
-		$query->fields('list_of_category');
-		$query->orderBy('id', 'ASC');
-		$category_list = $query->execute();
-	} //$category_id == NULL
-	else {
-		$query = db_select('list_of_category');
-		$query->fields('list_of_category');
-		$query->condition('category_id', $category_id);
-		$query->orderBy('id', 'ASC');
-		$category_list = $query->execute();
-	}
-	while ($category_list_data = $category_list->fetchObject()) {
-		$category[$category_list_data->category_id] = $category_list_data->category_name;
-	} //$category_list_data = $category_list->fetchObject()
-	return $category;
-}
+
 function textbook_companion_fixer_init()
 {
 	drupal_add_css(drupal_get_path("module", "textbook_companion_fixer") . "/css/textbook_companion_fixer.css");
 	drupal_add_js(drupal_get_path("module", "textbook_companion_fixer") . "/js/textbook_companion_fixer.js");
+	drupal_add_js(drupal_get_path("module", "textbook_companion_fixer") . "/js/textbook_companion_fixer_edit_category.js");
 	//drupal_add_js(drupal_get_path("module", "scilab_fixer") . "/js/jquery-noconfilct.js");
 	drupal_add_js(drupal_get_path("module", "textbook_companion_fixer") . "/js/selection.js");
 }
