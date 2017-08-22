@@ -368,7 +368,8 @@ function _textbook_companion_fixer_list_of_subcategory($pref_id, $category_id)
                 FROM list_of_subcategory los WHERE los.maincategory_id= :category_id AND los.subcategory_id 
                 NOT IN (SELECT los.subcategory_id as sub_id from list_of_subcategory los 
                 LEFT OUTER JOIN textbook_companion_book_main_subcategories tcbms 
-                ON los.subcategory_id=tcbms.sub_category WHERE tcbms.pref_id= :pref_id ORDER BY sub_id)
+                ON los.subcategory_id=tcbms.sub_category WHERE tcbms.pref_id= :pref_id and tcbms.main_category=:category_id
+                ORDER BY sub_id)
                 ";
 	$args = array(
 		':pref_id' => $pref_id,

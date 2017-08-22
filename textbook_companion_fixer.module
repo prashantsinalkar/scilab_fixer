@@ -1,5 +1,6 @@
 <?php
 require_once('textbook_companion_fixer_email.inc');
+include('textbook_companion_fixer_edit_book_category.inc');
 function textbook_companion_fixer_menu()
 {
 	$items = array();
@@ -753,30 +754,6 @@ function scilab_fixer_code_form($form, &$form_state)
 		"#suffix" => "</div>"
 	);
 	return $form;
-}
-function _tbc_fixer_list_of_category($category_id = NULL)
-{
-	$category[0] = "Please select";
-	if ($category_id == NULL)
-	{
-		$query = db_select('list_of_category');
-		$query->fields('list_of_category');
-		$query->orderBy('id', 'ASC');
-		$category_list = $query->execute();
-	} //$category_id == NULL
-	else
-	{
-		$query = db_select('list_of_category');
-		$query->fields('list_of_category');
-		$query->condition('category_id', $category_id);
-		$query->orderBy('id', 'ASC');
-		$category_list = $query->execute();
-	}
-	while ($category_list_data = $category_list->fetchObject())
-	{
-		$category[$category_list_data->category_id] = $category_list_data->category_name;
-	} //$category_list_data = $category_list->fetchObject()
-	return $category;
 }
 function scilab_fixer_code_all()
 {
