@@ -241,7 +241,7 @@ function _tbc_fixer_list_of_category($category_id = NULL)
 	{
 		$query = db_select('list_of_category');
 		$query->fields('list_of_category');
-		$query->condition('category_id', $category_id);
+		$query->condition('id', $category_id);
 		$query->orderBy('id', 'ASC');
 		$category_list = $query->execute();
 	}
