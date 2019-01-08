@@ -37,7 +37,6 @@
 					.val() + "'>" + $(this).text() + "</option>");
 
 				/**********************/
-				console.log($('.main-subcategory-' + selectID).attr('data-cid'));
 				var pref_id = $('.prefrence_id').val();
 				var main_cat_chk_value = selectID;
 				var sub_cat_select_value = $(this).val();

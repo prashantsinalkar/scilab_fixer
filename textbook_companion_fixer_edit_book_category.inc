@@ -106,7 +106,7 @@ function textbook_companion_fixer_category_edit_form($form, &$form_state)
 	);
 	return $form;
 }
-function textbook_companion_fixer_edit_book_category_ajax($item, $key)
+function textbook_companion_fixer_edit_book_category_ajax()
 {
 	global $user;
 	$data = "";
