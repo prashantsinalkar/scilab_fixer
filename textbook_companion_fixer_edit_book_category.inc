@@ -247,7 +247,7 @@ function _tbc_fixer_list_of_category($category_id = NULL)
 	}
 	while ($category_list_data = $category_list->fetchObject())
 	{
-		$category[$category_list_data->category_id] = $category_list_data->category_name;
+		$category[$category_list_data->id] = $category_list_data->category_name;
 	} //$category_list_data = $category_list->fetchObject()
 	return $category;
 }
